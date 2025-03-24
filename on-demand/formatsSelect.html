@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 1200px;
+            max-width: 1800px; /* Increased from 1200px */
             margin: 0 auto;
             padding: 20px;
         }
@@ -16,11 +16,11 @@
             gap: 20px;
         }
         .left-column {
-            flex: 1;
+            flex: 3; /* Increased from 1 to give more space to left column */
         }
         .right-column {
-            flex: 1;
-            max-width: 500px;
+            flex: 2; /* Increased from 1 to give more space to right column */
+            max-width: 650px; /* Increased from 500px */
         }
         .controls {
             margin-bottom: 20px;
@@ -144,16 +144,12 @@
                 
                 <div class="button-group">
                     <div class="group-title">Write Operations</div>
-                    <button id="generate-btn">1. Generate Data</button>
-                    <button id="write-btn">2. Write to Clipboard</button>
-                    <button id="compare-write-btn">3. Compare Two Writes</button>
+                    <button id="write-btn">Write to Clipboard</button>
                 </div>
                 
                 <div class="button-group">
                     <div class="group-title">Read Operations</div>
-                    <button id="read-btn">1. Read from Clipboard</button>
-                    <button id="compare-read-btn">2. Compare Two Reads</button>
-                    <button id="compare-scenarios-btn">3. Compare Reading Scenarios</button>
+                    <button id="read-btn">Read from Clipboard</button>
                 </div>
 
                 <button id="clear-log">Clear Log</button>
@@ -177,8 +173,10 @@
                             <th>Time</th>
                             <th>Size (MB)</th>
                             <th>Duration (ms)</th>
+                            <th>Throughput (MB/s)</th>
                             <th>Size/Type (MB)</th>
                             <th>Formats</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="records-body">
@@ -198,6 +196,7 @@
         let lastReadTime = 0;
         let lastReadMB = 0;
         let previousReadTime = 0;
+        let lastGeneratedSize = 0; // Track the last generated data size
         let clipboardRecords = []; // New array to store records
 
         // Function to generate data of specified size in MB
@@ -490,17 +489,21 @@
             const copyTimeMs = lastReadTime;
             const types = lastReadTypes;
             
+            // Calculate throughput in MB per second
+            const throughput = parseFloat(sizeInMB) / (copyTimeMs / 1000);
+            
             const record = {
                 datetime: now.toISOString(),
                 totalSizeMB: parseFloat(sizeInMB),
                 copyTimeMs: copyTimeMs,
                 types: types,
-                sizePerType: parseFloat(sizeInMB) / types.length
+                sizePerType: parseFloat(sizeInMB) / types.length,
+                throughput: throughput
             };
             
             clipboardRecords.push(record);
             
-            log(`Record added: ${now.toLocaleTimeString()} - Size: ${sizeInMB}MB - Time: ${copyTimeMs.toFixed(2)}ms - Types: ${types.join(', ')}`, "success");
+            log(`Record added: ${now.toLocaleTimeString()} - Size: ${sizeInMB}MB - Time: ${copyTimeMs.toFixed(2)}ms - Throughput: ${throughput.toFixed(2)} MB/s - Types: ${types.join(', ')}`, "success");
             log(`Total records: ${clipboardRecords.length}`);
             
             updateRecordsTable();
@@ -524,11 +527,21 @@
                     <td>${timeFormatted}</td>
                     <td>${record.totalSizeMB.toFixed(2)}</td>
                     <td>${record.copyTimeMs.toFixed(2)}</td>
+                    <td>${record.throughput ? record.throughput.toFixed(2) : 'N/A'}</td>
                     <td>${record.sizePerType ? record.sizePerType.toFixed(2) : 'N/A'}</td>
                     <td>${record.types.join(', ')}</td>
+                    <td><button class="delete-record" data-index="${index}">Delete</button></td>
                 `;
                 
                 tableBody.appendChild(row);
+            });
+            
+            // Add event listeners to delete buttons
+            document.querySelectorAll('.delete-record').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    const index = parseInt(this.getAttribute('data-index'));
+                    deleteRecord(index);
+                });
             });
         }
 
@@ -539,7 +552,7 @@
                 return;
             }
             
-            const headers = ['Timestamp', 'Size (MB)', 'Duration (ms)', 'Size/Type (MB)', 'Formats'];
+            const headers = ['Timestamp', 'Size (MB)', 'Duration (ms)', 'Throughput (MB/s)', 'Size/Type (MB)', 'Formats'];
             
             let csvContent = headers.join(',') + '\n';
             
@@ -548,6 +561,7 @@
                     record.datetime,
                     record.totalSizeMB.toFixed(2),
                     record.copyTimeMs.toFixed(2),
+                    record.throughput ? record.throughput.toFixed(2) : 'N/A',
                     record.sizePerType ? record.sizePerType.toFixed(2) : 'N/A',
                     '"' + record.types.join('; ') + '"'
                 ];
@@ -612,15 +626,14 @@
         }
 
         // Event listeners
-        document.getElementById('generate-btn').addEventListener('click', () => {
-            const sizeInMB = parseInt(document.getElementById('data-size').value) || 50;
-            generatedData = generateDataOfSize(sizeInMB);
-        });
-
         document.getElementById('write-btn').addEventListener('click', async () => {
-            if (!generatedData) {
-                log("No data generated. Please generate data first.", "error");
-                return;
+            const currentSize = parseInt(document.getElementById('data-size').value) || 50;
+            
+            // Generate data if it doesn't exist or if the size has changed
+            if (!generatedData || currentSize !== lastGeneratedSize) {
+                log(`Data size changed from ${lastGeneratedSize}MB to ${currentSize}MB, regenerating data...`);
+                lastGeneratedSize = currentSize;
+                generatedData = generateDataOfSize(currentSize);
             }
             
             // Save previous write time if exists
@@ -629,15 +642,6 @@
             }
             
             lastWriteTime = await writeDataToClipboard(generatedData);
-        });
-
-        document.getElementById('compare-write-btn').addEventListener('click', async () => {
-            if (!generatedData) {
-                log("No data generated. Please generate data first.", "error");
-                return;
-            }
-            
-            await compareWrites(generatedData);
         });
 
         document.getElementById('read-btn').addEventListener('click', async () => {
@@ -651,19 +655,6 @@
                 
                 lastReadTime = result.time;
             }
-        });
-
-        document.getElementById('compare-read-btn').addEventListener('click', async () => {
-            await compareReads();
-        });
-
-        document.getElementById('compare-scenarios-btn').addEventListener('click', async () => {
-            if (!generatedData) {
-                log("No data generated. Please generate data first.", "error");
-                return;
-            }
-            
-            await compareReadingScenarios(generatedData);
         });
 
         document.getElementById('record-btn').addEventListener('click', () => {
@@ -690,7 +681,7 @@
 
         // Initial log message
         log("Clipboard Performance Test initialized");
-        log("Steps: 1) Generate data, 2) Select formats and write to clipboard, 3) Test read operations");
+        log("Steps: 1) Set data size and formats, 2) Write to clipboard, 3) Read and record results");
 
         // Load records from localStorage
         loadRecordsFromLocalStorage();
