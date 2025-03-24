@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clipboard Performance Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .controls {
+            margin-bottom: 20px;
+        }
+        button {
+            margin: 5px;
+            padding: 8px 16px;
+        }
+        #log-container {
+            border: 1px solid #ccc;
+            padding: 10px;
+            height: 400px;
+            overflow-y: auto;
+            background-color: #f9f9f9;
+            font-family: monospace;
+        }
+        .log-entry {
+            margin: 5px 0;
+            padding: 3px;
+            border-bottom: 1px solid #eee;
+        }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+    </style>
+</head>
+<body>
+    <h1>Clipboard Data Size Test</h1>
+
+    <div class="controls">
+        <div>
+            <label for="data-size">Data Size (MB): </label>
+            <input type="number" id="data-size" value="50" min="1" max="100">
+        </div>
+        <div>
+            <label for="format-count">Number of Custom Formats: </label>
+            <input type="number" id="format-count" value="1" min="1" max="10">
+        </div>
+        <button id="generate-btn">1. Generate Data</button>
+        <button id="write-btn">2. Write to Clipboard</button>
+        <button id="compare-btn">3. Compare Two Writes</button>
+        <button id="clear-log">Clear Log</button>
+    </div>
+
+    <div id="log-container"></div>
+
+    <script>
+        // Global variables
+        let generatedData = '';
+        let lastWriteTime = 0;
+        let previousWriteTime = 0;
+
+        // Function to generate data of specified size in MB
+        function generateDataOfSize(sizeInMB) {
+            const bytesPerMB = 1024 * 1024;
+            const targetBytes = sizeInMB * bytesPerMB;
+            
+            log(`Generating ${sizeInMB} MB of data...`);
+            
+            // Creating data in chunks to avoid memory issues
+            const chunkSize = 1024 * 1024; // 1MB chunks
+            let result = '';
+            
+            // Each character in JavaScript is 2 bytes
+            const totalChars = targetBytes / 2;
+            const chunksNeeded = Math.ceil(totalChars / chunkSize);
+            
+            for (let i = 0; i < chunksNeeded; i++) {
+                const remainingChars = Math.min(chunkSize, totalChars - result.length);
+                result += 'A'.repeat(remainingChars);
+                
+                if (i % 5 === 0 || i === chunksNeeded - 1) {
+                    // Update progress every 5 chunks or at the end
+                    const progress = Math.round((result.length / totalChars) * 100);
+                    log(`Generation progress: ${progress}%`, "info", true);
+                }
+            }
+            
+            log(`Data generated: ${(result.length * 2 / bytesPerMB).toFixed(2)} MB`, "success");
+            return result;
+        }
+
+        // Function to write data to clipboard in multiple custom formats
+        async function writeDataToClipboard(data, formatCount) {
+            log(`Writing ${(data.length * 2 / (1024 * 1024)).toFixed(2)} MB of data to ${formatCount} formats...`);
+            
+            // Create a clipboard item with multiple formats
+            const clipboardItems = {};
+            
+            // Start timing
+            const startTime = performance.now();
+            
+            try {
+                // Add custom formats
+                for (let i = 1; i <= formatCount; i++) {
+                    const formatName = `web test/cl${i}`;
+                    clipboardItems[formatName] = new Blob([data], { type: formatName });
+                }
+                
+                // Add standard text format
+                // clipboardItems['text/plain'] = new Blob([data], { type: 'text/plain' });
+                
+                await navigator.clipboard.write([
+                    new ClipboardItem(clipboardItems)
+                ]);
+                
+                // End timing
+                const endTime = performance.now();
+                const timeTaken = endTime - startTime;
+                
+                log(`Write completed in ${timeTaken.toFixed(2)} ms`, "success");
+                
+                return timeTaken;
+            } catch (error) {
+                log(`Error writing to clipboard: ${error.message}`, "error");
+                return null;
+            }
+        }
+
+        // Function to compare two write operations
+        async function compareWrites(data, formatCount) {
+            log(`Starting first write operation...`);
+            const firstTime = await writeDataToClipboard(data, formatCount);
+            
+            if (!firstTime) {
+                log(`First write failed, cannot continue comparison.`, "error");
+                return;
+            }
+            
+            log(`Waiting 2 seconds before second write...`);
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            log(`Starting second write operation...`);
+            const secondTime = await writeDataToClipboard(data, formatCount);
+            
+            if (!secondTime) {
+                log(`Second write failed, cannot complete comparison.`, "error");
+                return;
+            }
+            
+            const timeDifference = secondTime - firstTime;
+            log(`Time difference: ${timeDifference.toFixed(2)} ms`, 
+                timeDifference > 0 ? "info" : "success");
+            log(`First write: ${firstTime.toFixed(2)} ms, Second write: ${secondTime.toFixed(2)} ms`);
+            
+            return { firstTime, secondTime, difference: timeDifference };
+        }
+
+        // Function to log messages on the HTML page
+        function log(message, type = "default", replace = false) {
+            const logContainer = document.getElementById('log-container');
+            let entry;
+            
+            if (replace && logContainer.lastChild) {
+                entry = logContainer.lastChild;
+            } else {
+                entry = document.createElement('div');
+                entry.className = 'log-entry';
+                logContainer.appendChild(entry);
+            }
+            
+            if (type !== "default") {
+                entry.className = `log-entry ${type}`;
+            }
+            
+            const timestamp = new Date().toTimeString().substr(0, 8);
+            entry.textContent = `[${timestamp}] ${message}`;
+            
+            // Auto-scroll to bottom
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        // Event listeners
+        document.getElementById('generate-btn').addEventListener('click', () => {
+            const sizeInMB = parseInt(document.getElementById('data-size').value) || 50;
+            generatedData = generateDataOfSize(sizeInMB);
+        });
+
+        document.getElementById('write-btn').addEventListener('click', async () => {
+            if (!generatedData) {
+                log("No data generated. Please generate data first.", "error");
+                return;
+            }
+            
+            const formatCount = parseInt(document.getElementById('format-count').value) || 1;
+            
+            // Save previous write time if exists
+            if (lastWriteTime) {
+                previousWriteTime = lastWriteTime;
+            }
+            
+            lastWriteTime = await writeDataToClipboard(generatedData, formatCount);
+        });
+
+        document.getElementById('compare-btn').addEventListener('click', async () => {
+            if (!generatedData) {
+                log("No data generated. Please generate data first.", "error");
+                return;
+            }
+            
+            const formatCount = parseInt(document.getElementById('format-count').value) || 1;
+            await compareWrites(generatedData, formatCount);
+        });
+
+        document.getElementById('clear-log').addEventListener('click', () => {
+            document.getElementById('log-container').innerHTML = '';
+            log("Log cleared");
+        });
+
+        // Initial log message
+        log("Clipboard Performance Test initialized");
+        log("Steps: 1) Generate data, 2) Write to clipboard, 3) Compare writes");
+        
+        // Check if running in secure context (required for clipboard API)
+        if (!window.isSecureContext) {
+            log("Warning: This page is not running in a secure context. Clipboard API may be limited.", "error");
+        }
+    </script>
+</body>
+</html>
