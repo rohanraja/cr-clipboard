@@ -156,11 +156,6 @@
                     <button id="compare-scenarios-btn">3. Compare Reading Scenarios</button>
                 </div>
 
-                <div class="button-group">
-                    <div class="group-title">Recording Operations</div>
-                    <button id="record-btn">Record</button>
-                </div>
-
                 <button id="clear-log">Clear Log</button>
             </div>
 
@@ -172,6 +167,7 @@
                 <div class="records-title">Clipboard Records</div>
                 <div class="records-actions">
                     <button id="clear-records">Clear Records</button>
+                    <button id="record-btn">Record</button>
                     <button id="export-records">Export as CSV</button>
                 </div>
                 <table class="records-table" id="records-table">
@@ -181,6 +177,7 @@
                             <th>Time</th>
                             <th>Size (MB)</th>
                             <th>Duration (ms)</th>
+                            <th>Size/Type (MB)</th>
                             <th>Formats</th>
                         </tr>
                     </thead>
@@ -197,6 +194,7 @@
         let generatedData = '';
         let lastWriteTime = 0;
         let previousWriteTime = 0;
+        let lastReadTypes = [];
         let lastReadTime = 0;
         let lastReadMB = 0;
         let previousReadTime = 0;
@@ -246,7 +244,7 @@
             if (useCustomFormats) {
                 const count = parseInt(document.getElementById('custom-format-count').value) || 1;
                 for (let i = 1; i <= count; i++) {
-                    formats.push(`web-custom/format-${i}`);
+                    formats.push(`web custom/format-${i}`);
                 }
             }
             
@@ -278,7 +276,7 @@
                         clipboardItems[format] = new Blob([data], { type: format });
                     } else if (format === 'text/html') {
                         clipboardItems[format] = new Blob([`<pre>${data}</pre>`], { type: format });
-                    } else if (format.startsWith('web-custom/')) {
+                    } else if (format.startsWith('web custom/')) {
                         try {
                             // Custom formats will likely fail, but we'll try
                             clipboardItems[format] = new Blob([data], { type: format });
@@ -342,6 +340,7 @@
                 const timeTaken = endTime - startTime;
                 
                 lastReadMB = sizeMB;
+                lastReadTypes = types;
                 lastReadTime = timeTaken;
                 log(`Read ${sizeMB}MB data in ${timeTaken.toFixed(2)} ms`, "success");
                 
@@ -489,13 +488,14 @@
             const now = new Date();
             const sizeInMB = lastReadMB;
             const copyTimeMs = lastReadTime;
-            const types = getSelectedFormats();
+            const types = lastReadTypes;
             
             const record = {
                 datetime: now.toISOString(),
                 totalSizeMB: parseFloat(sizeInMB),
                 copyTimeMs: copyTimeMs,
-                types: types
+                types: types,
+                sizePerType: parseFloat(sizeInMB) / types.length
             };
             
             clipboardRecords.push(record);
@@ -504,6 +504,7 @@
             log(`Total records: ${clipboardRecords.length}`);
             
             updateRecordsTable();
+            saveRecordsToLocalStorage(); // Save to localStorage after adding record
             console.log("Clipboard Records:", clipboardRecords);
         }
 
@@ -523,6 +524,7 @@
                     <td>${timeFormatted}</td>
                     <td>${record.totalSizeMB.toFixed(2)}</td>
                     <td>${record.copyTimeMs.toFixed(2)}</td>
+                    <td>${record.sizePerType ? record.sizePerType.toFixed(2) : 'N/A'}</td>
                     <td>${record.types.join(', ')}</td>
                 `;
                 
@@ -537,7 +539,7 @@
                 return;
             }
             
-            const headers = ['Timestamp', 'Size (MB)', 'Duration (ms)', 'Formats'];
+            const headers = ['Timestamp', 'Size (MB)', 'Duration (ms)', 'Size/Type (MB)', 'Formats'];
             
             let csvContent = headers.join(',') + '\n';
             
@@ -546,6 +548,7 @@
                     record.datetime,
                     record.totalSizeMB.toFixed(2),
                     record.copyTimeMs.toFixed(2),
+                    record.sizePerType ? record.sizePerType.toFixed(2) : 'N/A',
                     '"' + record.types.join('; ') + '"'
                 ];
                 csvContent += row.join(',') + '\n';
@@ -562,6 +565,26 @@
             document.body.removeChild(a);
             
             log("Records exported as CSV", "success");
+        }
+
+        // Function to save records to localStorage
+        function saveRecordsToLocalStorage() {
+            localStorage.setItem('clipboardRecords', JSON.stringify(clipboardRecords));
+            log("Records saved to localStorage", "info");
+        }
+
+        // Function to load records from localStorage
+        function loadRecordsFromLocalStorage() {
+            const storedRecords = localStorage.getItem('clipboardRecords');
+            if (storedRecords) {
+                try {
+                    clipboardRecords = JSON.parse(storedRecords);
+                    log(`Loaded ${clipboardRecords.length} records from localStorage`, "success");
+                    updateRecordsTable();
+                } catch (e) {
+                    log(`Error loading records from localStorage: ${e.message}`, "error");
+                }
+            }
         }
 
         // Function to log messages on the HTML page
@@ -656,21 +679,32 @@
         document.getElementById('clear-records').addEventListener('click', () => {
             clipboardRecords = [];
             updateRecordsTable();
+            localStorage.removeItem('clipboardRecords'); // Remove from localStorage
             log("Records cleared", "info");
         });
         
         document.getElementById('export-records').addEventListener('click', () => {
+            saveRecordsToLocalStorage(); // Ensure latest records are saved
             exportRecordsAsCSV();
         });
 
         // Initial log message
         log("Clipboard Performance Test initialized");
         log("Steps: 1) Generate data, 2) Select formats and write to clipboard, 3) Test read operations");
-        
+
+        // Load records from localStorage
+        loadRecordsFromLocalStorage();
+
         // Check if running in secure context (required for clipboard API)
         if (!window.isSecureContext) {
             log("Warning: This page is not running in a secure context. Clipboard API may be limited.", "error");
         }
+
+        // Load records from localStorage on page load
+        loadRecordsFromLocalStorage();
+
+        // Save records to localStorage before page unload
+        window.addEventListener('beforeunload', saveRecordsToLocalStorage);
     </script>
 </body>
 </html>
