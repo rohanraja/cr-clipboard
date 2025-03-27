@@ -184,6 +184,8 @@
                     <button id="record-btn">Record</button>
                     <button id="export-records">Export as CSV</button>
                     <button id="import-records">Import CSV</button>
+                    <button id="rerun-all-btn">Rerun All</button>
+                    <button id="rerun-all-new-btn">Re-run all (new)</button>
                     <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
                 </div>
                 <table class="records-table" id="records-table">
@@ -895,6 +897,23 @@
             localStorage.setItem('clipboardRecords', JSON.stringify(clipboardRecords));
             log("Records saved to localStorage", "info");
         }
+        
+        // Function to load records from localStorage
+        function loadRecordsFromLocalStorage() {
+            try {
+                const storedRecords = localStorage.getItem('clipboardRecords');
+                if (storedRecords) {
+                    clipboardRecords = JSON.parse(storedRecords);
+                    log(`Loaded ${clipboardRecords.length} records from localStorage`, "success");
+                    updateRecordsTable();
+                } else {
+                    log("No records found in localStorage", "info");
+                }
+            } catch (e) {
+                log(`Error loading records from localStorage: ${e.message}`, "error");
+                console.error("Failed to parse stored records:", e);
+            }
+        }
 
         // Function to log messages on the HTML page
         function log(message, type = "default", replace = false) {
@@ -1150,6 +1169,58 @@
             runExperiment(sizesDictionary);
         }
         
+        // Function to run experiments for all records (creating new records)
+        async function rerunAllExperiments() {
+            if (clipboardRecords.length === 0) {
+                log("No records to rerun", "error");
+                return;
+            }
+            
+            log(`Starting to re-run experiments for all ${clipboardRecords.length} records...`, "info");
+            
+            // Disable the button while running
+            const rerunAllNewBtn = document.getElementById('rerun-all-new-btn');
+            rerunAllNewBtn.disabled = true;
+            rerunAllNewBtn.textContent = "Running...";
+
+            const tmpRecords = [...clipboardRecords]; // Create a copy of the records to avoid modifying the original array
+            
+            try {
+                // Process each record in sequence
+                for (let i = 0; i < tmpRecords.length; i++) {
+                    const record = tmpRecords[i];
+                    log(`Re-running experiment ${i+1} of ${tmpRecords.length}...`, "info");
+                    
+                    // Convert record's formatSizes to a sizesDictionary for runExperiment
+                    const sizesDictionary = {};
+                    
+                    // Process each format and its size from the record
+                    Object.entries(record.formatSizes).forEach(([format, size]) => {
+                        sizesDictionary[format] = size;
+                    });
+                    
+                    if (Object.keys(sizesDictionary).length === 0) {
+                        log(`Skipping record ${i+1}: no valid formats found`, "error");
+                        continue;
+                    }
+                    
+                    // Run the experiment with the extracted sizes - this will create a new record
+                    await runExperiment(sizesDictionary);
+                    
+                    // Add a small delay between experiments
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                }
+                
+                log(`Completed re-running experiments for all ${tmpRecords.length} records`, "success");
+            } catch (error) {
+                log(`Error during re-run all experiments: ${error.message}`, "error");
+            } finally {
+                // Re-enable the button
+                rerunAllNewBtn.disabled = false;
+                rerunAllNewBtn.textContent = "Re-run all (new)";
+            }
+        }
+
         // Initial log message
         log("Clipboard Performance Test initialized");
         log("Steps: 1) Set data size and formats, 2) Write to clipboard, 3) Read and record results");
@@ -1167,6 +1238,20 @@
 
         // Save records to localStorage before page unload
         window.addEventListener('beforeunload', saveRecordsToLocalStorage);
+
+        // Add event listener for "Rerun All" button
+        document.getElementById('rerun-all-btn').addEventListener('click', () => {
+            rerunAllRecords();
+        });
+        
+        // Add event listener for "Re-run all (new)" button
+        document.getElementById('rerun-all-new-btn').addEventListener('click', () => {
+            rerunAllExperiments();
+        });
+
+        document.getElementById('import-records').addEventListener('click', () => {
+            document.getElementById('csv-file-input').click();
+        });
     </script>
 </body>
 </html>
