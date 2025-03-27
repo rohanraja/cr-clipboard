@@ -183,6 +183,8 @@
                     <button id="clear-records">Clear Records</button>
                     <button id="record-btn">Record</button>
                     <button id="export-records">Export as CSV</button>
+                    <button id="import-records">Import CSV</button>
+                    <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
                 </div>
                 <table class="records-table" id="records-table">
                     <thead>
@@ -695,9 +697,9 @@
             let csvContent = headers.join(',') + '\n';
             
             clipboardRecords.forEach(record => {
-                // Format sizes as JSON string for CSV
+                // Format sizes as base64 encoded string for CSV to avoid parsing issues
                 const formatSizesStr = record.formatSizes ? 
-                    JSON.stringify(record.formatSizes).replace(/,/g, ';') : 'N/A';
+                    btoa(JSON.stringify(record.formatSizes)) : 'N/A';
                 
                 const row = [
                     record.datetime,
@@ -725,24 +727,173 @@
             log("Records exported as CSV", "success");
         }
 
+        // Function to import records from CSV
+        function importRecordsFromCSV(file) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    const csvContent = e.target.result;
+                    const lines = csvContent.split('\n');
+                    
+                    // Check if CSV has at least a header and one data row
+                    if (lines.length < 2) {
+                        log("Invalid CSV: file is empty or has no data rows", "error");
+                        return;
+                    }
+                    
+                    // Parse header to identify column positions
+                    const headers = lines[0].split(',');
+                    const colIndexes = {
+                        timestamp: headers.indexOf('Timestamp'),
+                        size: headers.indexOf('Size (MB)'),
+                        duration: headers.indexOf('Duration (ms)'),
+                        throughput: headers.indexOf('Throughput (MB/s)'),
+                        numFormats: headers.indexOf('NumFormats'),
+                        sizePerType: headers.indexOf('Size/Type (MB)'),
+                        formatSizes: headers.indexOf('Format Sizes'),
+                        formats: headers.indexOf('Formats')
+                    };
+                    
+                    // Check if required columns are present
+                    if (colIndexes.timestamp === -1 || colIndexes.duration === -1 || colIndexes.formats === -1) {
+                        log("Invalid CSV: missing required columns (Timestamp, Duration, Formats)", "error");
+                        return;
+                    }
+                    
+                    // Process data rows
+                    let importedRecords = [];
+                    let skippedRows = 0;
+                    
+                    for (let i = 1; i < lines.length; i++) {
+                        const line = lines[i].trim();
+                        if (!line) continue; // Skip empty lines
+                        
+                        // Handle quoted fields with commas inside
+                        const values = [];
+                        let inQuote = false;
+                        let currentValue = '';
+                        
+                        for (let j = 0; j < line.length; j++) {
+                            const char = line[j];
+                            
+                            if (char === '"' && (j === 0 || line[j-1] !== '\\')) {
+                                inQuote = !inQuote;
+                            } else if (char === ',' && !inQuote) {
+                                values.push(currentValue);
+                                currentValue = '';
+                            } else {
+                                currentValue += char;
+                            }
+                        }
+                        values.push(currentValue); // Add the last value
+                        
+                        try {
+                            // Parse timestamp
+                            const timestamp = values[colIndexes.timestamp].replace(/"/g, '');
+                            
+                            // Parse formats
+                            const formatsStr = values[colIndexes.formats].replace(/"/g, '');
+                            const types = formatsStr.split(';').map(type => type.trim()).filter(type => type);
+                            
+                            // Parse format sizes if available
+                            let formatSizes = {};
+                            if (colIndexes.formatSizes !== -1 && values[colIndexes.formatSizes]) {
+                                try {
+                                    // Clean up the string and check if it's base64 encoded
+                                    const formatSizesStr = values[colIndexes.formatSizes].replace(/"/g, '');
+                                    
+                                    if (formatSizesStr !== 'N/A') {
+                                        try {
+                                            // Try to decode as base64 first (newer format)
+                                            const decoded = atob(formatSizesStr);
+                                            formatSizes = JSON.parse(decoded);
+                                        } catch (decodeErr) {
+                                            // Fall back to legacy format with semicolons
+                                            const legacyStr = formatSizesStr.replace(/;/g, ',');
+                                            formatSizes = JSON.parse(legacyStr);
+                                        }
+                                    }
+                                } catch (e) {
+                                    log(`Error parsing format sizes for row ${i}: ${e.message}`, "error");
+                                    // Continue with empty formatSizes rather than skipping the record
+                                    formatSizes = {};
+                                }
+                            }
+                            
+                            // Create record object
+                            const record = {
+                                datetime: timestamp,
+                                totalSizeMB: parseFloat(values[colIndexes.size]) || 0,
+                                copyTimeMs: parseFloat(values[colIndexes.duration]) || 0,
+                                types: types,
+                                formatSizes: formatSizes,
+                                sizePerType: parseFloat(values[colIndexes.sizePerType]) || 0,
+                                throughput: parseFloat(values[colIndexes.throughput]) || 0,
+                                highlighted: false
+                            };
+                            
+                            importedRecords.push(record);
+                        } catch (e) {
+                            skippedRows++;
+                            log(`Error parsing row ${i}: ${e.message}`, "error");
+                        }
+                    }
+                    
+                    if (importedRecords.length === 0) {
+                        log("No valid records found in CSV file", "error");
+                        return;
+                    }
+                    
+                    // Add imported records to clipboardRecords
+                    clipboardRecords = [...clipboardRecords, ...importedRecords];
+                    
+                    // Update the table
+                    updateRecordsTable();
+                    
+                    // Save to localStorage
+                    saveRecordsToLocalStorage();
+                    
+                    log(`Successfully imported ${importedRecords.length} records from CSV`, "success");
+                    if (skippedRows > 0) {
+                        log(`Skipped ${skippedRows} invalid rows during import`, "info");
+                    }
+                    
+                } catch (e) {
+                    log(`Error importing CSV: ${e.message}`, "error");
+                }
+            };
+            
+            reader.onerror = function() {
+                log("Error reading the CSV file", "error");
+            };
+            
+            reader.readAsText(file);
+        }
+
+        document.getElementById('export-records').addEventListener('click', () => {
+            saveRecordsToLocalStorage(); // Ensure latest records are saved
+            exportRecordsAsCSV();
+        });
+        
+        // Add event listener for import CSV button
+        document.getElementById('import-records').addEventListener('click', () => {
+            document.getElementById('csv-file-input').click();
+        });
+        
+        // Add event listener for file input change
+        document.getElementById('csv-file-input').addEventListener('change', function(e) {
+            if (this.files && this.files[0]) {
+                importRecordsFromCSV(this.files[0]);
+                // Reset the file input so the same file can be selected again
+                this.value = '';
+            }
+        });
+
         // Function to save records to localStorage
         function saveRecordsToLocalStorage() {
             localStorage.setItem('clipboardRecords', JSON.stringify(clipboardRecords));
             log("Records saved to localStorage", "info");
-        }
-
-        // Function to load records from localStorage
-        function loadRecordsFromLocalStorage() {
-            const storedRecords = localStorage.getItem('clipboardRecords');
-            if (storedRecords) {
-                try {
-                    clipboardRecords = JSON.parse(storedRecords);
-                    log(`Loaded ${clipboardRecords.length} records from localStorage`, "success");
-                    updateRecordsTable();
-                } catch (e) {
-                    log(`Error loading records from localStorage: ${e.message}`, "error");
-                }
-            }
         }
 
         // Function to log messages on the HTML page
@@ -810,7 +961,7 @@
             log("Log cleared");
         });
         
-        // New button event listeners
+        // Records management button event listeners
         document.getElementById('clear-records').addEventListener('click', () => {
             clipboardRecords = [];
             updateRecordsTable();
@@ -821,6 +972,20 @@
         document.getElementById('export-records').addEventListener('click', () => {
             saveRecordsToLocalStorage(); // Ensure latest records are saved
             exportRecordsAsCSV();
+        });
+        
+        // Add event listener for import CSV button
+        // document.getElementById('import-records').addEventListener('click', () => {
+        //     document.getElementById('csv-file-input').click();
+        // });
+        
+        // Add event listener for file input change
+        document.getElementById('csv-file-input').addEventListener('change', function(e) {
+            if (this.files && this.files[0]) {
+                importRecordsFromCSV(this.files[0]);
+                // Reset the file input so the same file can be selected again
+                this.value = '';
+            }
         });
 
         // Function to run an experiment with specified format sizes
