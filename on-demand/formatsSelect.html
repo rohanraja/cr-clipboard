@@ -891,12 +891,33 @@
         }
 
         document.getElementById('run-experiment-btn').addEventListener('click', () => {
-            // Example sizes dictionary
-            const sizesDictionary = {
-                'text/plain': 20,
-                'text/html': 30,
-                'web custom/format-1': 10
-            };
+            // Get sizes dictionary from UI values
+            const sizesDictionary = {};
+            
+            // Add text/plain format if selected
+            if (document.getElementById('format-text-plain').checked) {
+                const size = parseInt(document.getElementById('format-text-plain-size').value) || 50;
+                sizesDictionary['text/plain'] = size;
+            }
+            
+            // Add text/html format if selected
+            if (document.getElementById('format-text-html').checked) {
+                const size = parseInt(document.getElementById('format-text-html-size').value) || 50;
+                sizesDictionary['text/html'] = size;
+            }
+            
+            // Add custom formats if selected
+            if (document.getElementById('format-custom').checked) {
+                const count = parseInt(document.getElementById('custom-format-count').value) || 1;
+                const size = parseInt(document.getElementById('format-custom-size').value) || 50;
+                
+                for (let i = 1; i <= count; i++) {
+                    sizesDictionary[`web custom/format-${i}`] = size;
+                }
+            }
+            
+            // Log the configuration
+            log(`Experiment configuration: ${JSON.stringify(sizesDictionary)}`, "info");
             
             runExperiment(sizesDictionary);
         });
