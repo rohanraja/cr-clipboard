@@ -606,7 +606,10 @@
                     <td>${formatSizesHtml}</td>
                     <td>${record.types.join(', ')}</td>
                     <td><input type="checkbox" class="highlight-checkbox" data-index="${index}" ${record.highlighted ? 'checked' : ''}></td>
-                    <td><button class="delete-record" data-index="${index}">Delete</button></td>
+                    <td>
+                        <button class="delete-record" data-index="${index}">Delete</button>
+                        <button class="run-again" data-index="${index}">Run again</button>
+                    </td>
                 `;
                 
                 tableBody.appendChild(row);
@@ -617,6 +620,14 @@
                 button.addEventListener('click', function(e) {
                     const index = parseInt(this.getAttribute('data-index'));
                     deleteRecord(index);
+                });
+            });
+            
+            // Add event listeners to "Run again" buttons
+            document.querySelectorAll('.run-again').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    const index = parseInt(this.getAttribute('data-index'));
+                    runRecord(clipboardRecords[index]);
                 });
             });
             
@@ -922,6 +933,58 @@
             runExperiment(sizesDictionary);
         });
 
+        // Function to run an experiment based on a previous record
+        function runRecord(record) {
+            if (!record || !record.formatSizes) {
+                log("Cannot run experiment: record or format sizes not available", "error");
+                return;
+            }
+            
+            log(`Running experiment based on record from ${new Date(record.datetime).toLocaleTimeString()}...`, "info");
+            
+            // Convert record's formatSizes to a sizesDictionary for runExperiment
+            const sizesDictionary = {};
+            
+            // Process each format and its size from the record
+            Object.entries(record.formatSizes).forEach(([format, size]) => {
+                sizesDictionary[format] = size;
+            });
+            
+            // Check if we have any valid formats
+            if (Object.keys(sizesDictionary).length === 0) {
+                log("No valid formats found in the record", "error");
+                return;
+            }
+            
+            // Update UI elements to match the record's format sizes
+            document.getElementById('format-text-plain').checked = sizesDictionary.hasOwnProperty('text/plain');
+            if (sizesDictionary['text/plain']) {
+                document.getElementById('format-text-plain-size').value = sizesDictionary['text/plain'];
+            }
+            
+            document.getElementById('format-text-html').checked = sizesDictionary.hasOwnProperty('text/html');
+            if (sizesDictionary['text/html']) {
+                document.getElementById('format-text-html-size').value = sizesDictionary['text/html'];
+            }
+            
+            const customFormats = Object.keys(sizesDictionary).filter(key => key.startsWith('web custom/'));
+            document.getElementById('format-custom').checked = customFormats.length > 0;
+            if (customFormats.length > 0) {
+                document.getElementById('custom-format-count').value = customFormats.length;
+                document.getElementById('format-custom-size').value = sizesDictionary[customFormats[0]];
+            }
+            
+            // Find the largest size for data size field
+            const maxSize = Math.max(...Object.values(sizesDictionary));
+            document.getElementById('data-size').value = maxSize;
+            
+            log(`Recreating experiment with formats: ${Object.keys(sizesDictionary).join(', ')}`, "info");
+            log(`UI updated with sizes: ${JSON.stringify(sizesDictionary)}`, "info");
+            
+            // Run the experiment with the extracted sizes
+            runExperiment(sizesDictionary);
+        }
+        
         // Initial log message
         log("Clipboard Performance Test initialized");
         log("Steps: 1) Set data size and formats, 2) Write to clipboard, 3) Read and record results");
