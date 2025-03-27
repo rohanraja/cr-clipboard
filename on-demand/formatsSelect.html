@@ -162,6 +162,7 @@
                 <div class="button-group">
                     <div class="group-title">Write Operations</div>
                     <button id="write-btn">Write to Clipboard</button>
+                    <button id="run-experiment-btn">Run Experiment</button>
                 </div>
                 
                 <div class="button-group">
@@ -809,6 +810,95 @@
         document.getElementById('export-records').addEventListener('click', () => {
             saveRecordsToLocalStorage(); // Ensure latest records are saved
             exportRecordsAsCSV();
+        });
+
+        // Function to run an experiment with specified format sizes
+        async function runExperiment(sizesDictionary) {
+            // Save original settings to restore later
+            const originalSettings = {
+                textPlain: document.getElementById('format-text-plain').checked,
+                textPlainSize: document.getElementById('format-text-plain-size').value,
+                textHtml: document.getElementById('format-text-html').checked,
+                textHtmlSize: document.getElementById('format-text-html-size').value,
+                custom: document.getElementById('format-custom').checked,
+                customCount: document.getElementById('custom-format-count').value,
+                customSize: document.getElementById('format-custom-size').value,
+                defaultSize: document.getElementById('data-size').value
+            };
+            
+            log("Starting experiment with specified format sizes...", "info");
+            
+            try {
+                // Configure formats based on the dictionary
+                document.getElementById('format-text-plain').checked = sizesDictionary.hasOwnProperty('text/plain');
+                if (sizesDictionary['text/plain']) {
+                    document.getElementById('format-text-plain-size').value = sizesDictionary['text/plain'];
+                }
+                
+                document.getElementById('format-text-html').checked = sizesDictionary.hasOwnProperty('text/html');
+                if (sizesDictionary['text/html']) {
+                    document.getElementById('format-text-html-size').value = sizesDictionary['text/html'];
+                }
+                
+                const customFormats = Object.keys(sizesDictionary).filter(key => key.startsWith('web custom/'));
+                document.getElementById('format-custom').checked = customFormats.length > 0;
+                if (customFormats.length > 0) {
+                    document.getElementById('custom-format-count').value = customFormats.length;
+                    document.getElementById('format-custom-size').value = sizesDictionary[customFormats[0]];
+                }
+                
+                // Find the largest size for data generation
+                const maxSize = Math.max(...Object.values(sizesDictionary));
+                document.getElementById('data-size').value = maxSize;
+                
+                // Generate data based on the largest size
+                log(`Generating data for experiment (max size: ${maxSize} MB)...`);
+                const generatedData = generateDataOfSize(maxSize);
+                
+                // Write to clipboard
+                log("Writing to clipboard with configured formats...");
+                const writeTime = await writeDataToClipboard(generatedData);
+                
+                if (writeTime) {
+                    // Wait a moment before reading
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    
+                    // Read from clipboard
+                    log("Reading from clipboard...");
+                    const readResult = await readFromClipboard();
+                    
+                    if (readResult) {
+                        // Record the operation
+                        log("Recording experiment results...");
+                        recordClipboardOperation();
+                    }
+                }
+            } catch (error) {
+                log(`Error during experiment: ${error.message}`, "error");
+            } finally {
+                // Restore original settings
+                document.getElementById('format-text-plain').checked = originalSettings.textPlain;
+                document.getElementById('format-text-plain-size').value = originalSettings.textPlainSize;
+                document.getElementById('format-text-html').checked = originalSettings.textHtml;
+                document.getElementById('format-text-html-size').value = originalSettings.textHtmlSize;
+                document.getElementById('format-custom').checked = originalSettings.custom;
+                document.getElementById('custom-format-count').value = originalSettings.customCount;
+                document.getElementById('format-custom-size').value = originalSettings.customSize;
+                document.getElementById('data-size').value = originalSettings.defaultSize;
+                
+                log("Experiment completed and original settings restored", "success");
+            }
+        }
+
+        document.getElementById('run-experiment-btn').addEventListener('click', () => {
+            // Example sizes dictionary
+            const sizesDictionary = {
+                'text/plain': 20,
+                'text/html': 30,
+                'web custom/format-1': 10
+            };
+            
+            runExperiment(sizesDictionary);
         });
 
         // Initial log message
