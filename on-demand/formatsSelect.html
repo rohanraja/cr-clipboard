@@ -10,19 +10,43 @@
             max-width: 1800px; /* Increased from 1200px */
             margin: 0 auto;
             padding: 20px;
+            display: flex;
+            flex-direction: column;
+            height: 95vh;
         }
-        .container {
+        .top-container {
+            flex: 1;
+            margin-bottom: 20px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 45vh;
+        }
+        .bottom-container {
+            flex: 1;
             display: flex;
             gap: 20px;
+            min-height: 45vh;
         }
-        .left-column {
-            flex: 2; /* Increased from 1 to give more space to left column */
-        }
-        .right-column {
-            flex: 3; /* Increased from 1 to give more space to right column */
+        .left-column, .right-column {
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
         .controls {
             margin-bottom: 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+        #log-container {
+            border: 1px solid #ccc;
+            padding: 10px;
+            height: 100%;
+            overflow-y: auto;
+            background-color: #f9f9f9;
+            font-family: monospace;
+            flex: 1;
         }
         button {
             margin: 5px;
@@ -47,14 +71,6 @@
         .format-option {
             margin: 5px 0;
         }
-        #log-container {
-            border: 1px solid #ccc;
-            padding: 10px;
-            height: 400px;
-            overflow-y: auto;
-            background-color: #f9f9f9;
-            font-family: monospace;
-        }
         .log-entry {
             margin: 5px 0;
             padding: 3px;
@@ -71,10 +87,10 @@
         .records-container {
             border: 1px solid #ccc;
             padding: 10px;
-            margin-top: 10px;
             background-color: #f9f9f9;
-            height: 600px;
             overflow-y: auto;
+            flex: 1;
+            max-height: 100%;
         }
         .records-title {
             font-size: 18px;
@@ -95,6 +111,7 @@
             background-color: #f2f2f2;
             position: sticky;
             top: 0;
+            z-index: 10;
         }
         .records-table tr:nth-child(even) {
             background-color: #f5f5f5;
@@ -106,10 +123,17 @@
             margin-top: 10px;
             display: flex;
             justify-content: space-between;
+            flex-wrap: wrap;
         }
         .records-table tr.highlighted {
             background-color: #ffffc0 !important; /* Light yellow highlight */
             font-weight: bold;
+        }
+        .seed-record {
+            background-color: #e0f7fa !important; /* Light cyan background */
+        }
+        .seed-record td {
+            color: #006064;
         }
         .highlight-checkbox {
             margin-right: 5px;
@@ -124,7 +148,45 @@
 <body>
     <h1>Clipboard Performance Test</h1>
 
-    <div class="container">
+    <div class="top-container">
+        <div class="records-container">
+            <div class="records-title">Clipboard Records</div>
+            <div class="records-actions">
+                <button id="clear-records">Clear Records</button>
+                <button id="record-btn">Record</button>
+                <button id="export-records">Export as CSV</button>
+                <button id="import-records">Import CSV</button>
+                <button id="rerun-all-btn">Rerun All</button>
+                <button id="rerun-all-new-btn">Re-run all (new)</button>
+                <button id="load-seed-btn">Load Seed</button>
+                <button id="copy-for-seed-btn">Copy table for seed</button>
+                <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
+            </div>
+            <table class="records-table" id="records-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Time</th>
+                        <th>Size (MB)</th>
+                        <th>Duration (ms)</th>
+                        <th>Throughput (MB/s)</th>
+                        <th>NumFormats</th>
+                        <th>Size/Type (MB)</th>
+                        <th>Format Sizes</th>
+                        <th>Formats</th>
+                        <th>Machine</th>
+                        <th>Highlight</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="records-body"></tbody>
+                    <!-- Record rows will be inserted here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="bottom-container">
         <div class="left-column">
             <div class="controls">
                 <div>
@@ -182,48 +244,13 @@
 
                 <button id="clear-log">Clear Log</button>
             </div>
-
-            <div id="log-container"></div>
         </div>
         
         <div class="right-column">
-            <div class="records-container">
-                <div class="records-title">Clipboard Records</div>
-                <div class="records-actions">
-                    <button id="clear-records">Clear Records</button>
-                    <button id="record-btn">Record</button>
-                    <button id="export-records">Export as CSV</button>
-                    <button id="import-records">Import CSV</button>
-                    <button id="rerun-all-btn">Rerun All</button>
-                    <button id="rerun-all-new-btn">Re-run all (new)</button>
-                    <button id="load-seed-btn">Load Seed</button>
-                    <button id="copy-for-seed-btn">Copy table for seed</button>
-                    <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
-                </div>
-                <table class="records-table" id="records-table">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Time</th>
-                            <th>Size (MB)</th>
-                            <th>Duration (ms)</th>
-                            <th>Throughput (MB/s)</th>
-                            <th>NumFormats</th>
-                            <th>Size/Type (MB)</th>
-                            <th>Format Sizes</th>
-                            <th>Formats</th>
-                            <th>Machine</th>
-                            <th>Highlight</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="records-body">
-                        <!-- Record rows will be inserted here -->
-                    </tbody>
-                </table>
-            </div>
+            <div id="log-container"></div>
         </div>
     </div>
+
     <script>
     const seededClipboardRecords = [
     {
@@ -841,6 +868,7 @@
             log(`Total records: ${clipboardRecords.length}`);
             
             updateRecordsTable();
+            scrollTableToBottom(); // Scroll to the bottom to show the new record
             saveRecordsToLocalStorage(); // Save to localStorage after adding record
             console.log("Clipboard Records:", clipboardRecords);
         }
@@ -866,6 +894,11 @@
                 
                 if (record.highlighted) {
                     row.className = 'highlighted';
+                }
+                
+                // Add seed styling if it's a seed record
+                if (record.isSeedRecord || (record.systemInfo && record.systemInfo.formatted === "SEED")) {
+                    row.className += ' seed-record';
                 }
                 
                 const time = new Date(record.datetime);
@@ -970,8 +1003,14 @@
 
         // Function to export records as CSV
         function exportRecordsAsCSV() {
-            if (clipboardRecords.length === 0) {
-                log("No records to export", "error");
+            // Filter out seed records before export
+            const recordsToExport = clipboardRecords.filter(record => 
+                !record.isSeedRecord && 
+                (!record.systemInfo || record.systemInfo.formatted !== "SEED")
+            );
+            
+            if (recordsToExport.length === 0) {
+                log("No non-seed records to export", "error");
                 return;
             }
             
@@ -979,7 +1018,7 @@
             
             let csvContent = headers.join(',') + '\n';
             
-            clipboardRecords.forEach(record => {
+            recordsToExport.forEach(record => {
                 // Format sizes as JSON string for CSV (without base64 encoding)
                 const formatSizesStr = record.formatSizes ? 
                     `"${JSON.stringify(record.formatSizes).replace(/"/g, '""')}"` : '"N/A"';
@@ -1013,7 +1052,7 @@
             a.click();
             document.body.removeChild(a);
             
-            log("Records exported as CSV", "success");
+            log(`Records exported as CSV (${recordsToExport.length} records, excluding seeded records)`, "success");
         }
 
         // Function to import records from CSV
@@ -1287,15 +1326,40 @@
         // Function to load seeded records into the table
         function loadSeededRecords() {
             if (seededClipboardRecords && seededClipboardRecords.length > 0) {
-                clipboardRecords = JSON.parse(JSON.stringify(seededClipboardRecords)); // Deep copy
+                // Deep copy seeded records but modify machine info to "SEED"
+                clipboardRecords = JSON.parse(JSON.stringify(seededClipboardRecords)).map(record => {
+                    // Mark record as seeded by setting machine info to "SEED"
+                    return {
+                        ...record,
+                        systemInfo: {
+                            os: "SEED",
+                            ram: "SEED",
+                            cpu: "SEED",
+                            formatted: "SEED",
+                            userProvided: true
+                        },
+                        isSeedRecord: true // Add flag to identify seed records
+                    };
+                });
+                
                 updateRecordsTable();
                 saveRecordsToLocalStorage();
                 log(`Loaded ${clipboardRecords.length} seeded records`, "success");
+                log(`These records are marked with machine name "SEED" and will be excluded from CSV exports`, "info");
+                
+                // Scroll table to bottom after loading seeds
+                scrollTableToBottom();
             } else {
                 log("No seeded records found", "error");
             }
         }
         
+        // Function to scroll the records table to the bottom
+        function scrollTableToBottom() {
+            const recordsContainer = document.querySelector('.records-container');
+            recordsContainer.scrollTop = recordsContainer.scrollHeight;
+        }
+
         // Function to copy current records table as JS code for seeding
         function copyRecordsAsJSCode() {
             if (clipboardRecords.length === 0) {
@@ -1447,7 +1511,7 @@
                     if (readResult) {
                         // Record the operation
                         log("Recording experiment results...");
-                        recordClipboardOperation();
+                        recordClipboardOperation(); // This will also scroll the table to the bottom
                     }
                 }
             } catch (error) {
@@ -1464,6 +1528,7 @@
                 document.getElementById('data-size').value = originalSettings.defaultSize;
                 
                 log("Experiment completed and original settings restored", "success");
+                scrollTableToBottom(); // Ensure the table is scrolled to bottom after experiment
             }
         }
 
@@ -1617,6 +1682,7 @@
 
         // Load records from localStorage on page load
         loadRecordsFromLocalStorage();
+        scrollTableToBottom(); // Scroll to bottom when loading initial records
 
         // Save records to localStorage before page unload
         window.addEventListener('beforeunload', saveRecordsToLocalStorage);
