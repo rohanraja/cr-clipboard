@@ -6,6 +6,7 @@ const cors = require('cors');
 const https = require('https');
 const app = express();
 const port = process.env.PORT || 5044;
+const { mergeAllCsvFiles } = require('./merge-csv');
 
 // Create uploads directory if it doesn't exist
 const uploadsDir = path.join(__dirname, 'uploads');
@@ -108,6 +109,7 @@ app.post('/upload', upload.single('file'), (req, res) => {
             return res.status(400).json({ error: 'No file uploaded' });
         }
         
+        mergeAllCsvFiles();
         // Return information about the uploaded file
         res.status(200).json({
             message: 'File uploaded successfully',
