@@ -1,0 +1,5 @@
+Timestamp,Size (MB),Duration (ms),Throughput (MB/s),NumFormats,Size/Type (MB),Format Sizes,Formats
+2025-03-28T07:59:07.776Z,50.00,174.20,287.03,1,50.00,"eyJ0ZXh0L3BsYWluIjo1MH0=","text/plain"
+2025-03-28T07:59:10.518Z,100.00,618.20,161.76,2,50.00,"eyJ0ZXh0L3BsYWluIjo1MCwidGV4dC9odG1sIjo1MH0=","text/plain; text/html"
+2025-03-28T07:59:17.580Z,200.00,672.90,297.22,4,50.00,"eyJ3ZWIgY3VzdG9tL2Zvcm1hdC0xIjo1MCwid2ViIGN1c3RvbS9mb3JtYXQtMiI6NTAsInRleHQvcGxhaW4iOjUwLCJ0ZXh0L2h0bWwiOjUwfQ==","web custom/format-1; web custom/format-2; text/plain; text/html"
+2025-03-28T07:59:22.701Z,50.00,500.00,100.00,1,50.00,"eyJ0ZXh0L2h0bWwiOjUwfQ==","text/html"
