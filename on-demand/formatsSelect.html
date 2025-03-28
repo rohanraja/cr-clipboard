@@ -611,22 +611,18 @@
                 }
                 
                 // If we have standard formats, proceed with write
-                if (clipboardItems['text/plain'] || clipboardItems['text/html']) {
-                    await navigator.clipboard.write([
-                        new ClipboardItem(clipboardItems)
-                    ]);
-                    
-                    // End timing
-                    const endTime = performance.now();
-                    const timeTaken = endTime - startTime;
-                    
-                    log(`Write completed in ${timeTaken.toFixed(2)} ms`, "success");
-                    log(`Number of formats used: ${Object.keys(clipboardItems).length}`);
-                    
-                    return timeTaken;
-                } else {
-                    throw new Error("At least one of text/plain or text/html is required");
-                }
+                await navigator.clipboard.write([
+                    new ClipboardItem(clipboardItems)
+                ]);
+                
+                // End timing
+                const endTime = performance.now();
+                const timeTaken = endTime - startTime;
+                
+                log(`Write completed in ${timeTaken.toFixed(2)} ms`, "success");
+                log(`Number of formats used: ${Object.keys(clipboardItems).length}`);
+                
+                return timeTaken;
             } catch (error) {
                 log(`Error writing to clipboard: ${error.message}`, "error");
                 return null;
