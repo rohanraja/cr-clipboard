@@ -133,6 +133,16 @@
                 </div>
                 
                 <div class="format-options">
+                    <div class="group-title">Machine Information:</div>
+                    <div>
+                        <label for="machine-details">Machine Details: </label>
+                        <input type="text" id="machine-details" placeholder="OS, RAM, CPU" 
+                               style="width: 80%;" value="">
+                        <button id="detect-machine-btn" style="padding: 4px 8px; margin-left: 5px;">Auto-detect</button>
+                    </div>
+                </div>
+                
+                <div class="format-options">
                     <div class="group-title">Clipboard Format Options:</div>
                     
                     <div class="format-option">
@@ -200,6 +210,7 @@
                             <th>Size/Type (MB)</th>
                             <th>Format Sizes</th>
                             <th>Formats</th>
+                            <th>Machine</th>
                             <th>Highlight</th>
                             <th>Actions</th>
                         </tr>
@@ -224,7 +235,70 @@
         let lastGeneratedSize = 0; // Track the last generated data size
         let lastFormatSizes = {}; // Track last read format sizes
         let clipboardRecords = []; // New array to store records
-
+        
+        // Function to get system information
+        function getSystemInfo() {
+            // Get OS information
+            const userAgent = navigator.userAgent;
+            let os = "Unknown OS";
+            if (userAgent.indexOf("Windows") !== -1) os = "Windows";
+            else if (userAgent.indexOf("Mac") !== -1) os = "MacOS";
+            else if (userAgent.indexOf("Linux") !== -1) os = "Linux";
+            else if (userAgent.indexOf("Android") !== -1) os = "Android";
+            else if (userAgent.indexOf("iOS") !== -1 || userAgent.indexOf("iPhone") !== -1 || userAgent.indexOf("iPad") !== -1) os = "iOS";
+            
+            // Get RAM information - this is limited in browsers
+            let ram = "Unknown";
+            if (navigator.deviceMemory) {
+                ram = `${navigator.deviceMemory} GB`;
+            }
+            
+            // Get CPU information - this is very limited in browsers
+            let cpu = "Unknown";
+            if (navigator.hardwareConcurrency) {
+                cpu = `${navigator.hardwareConcurrency} Cores`;
+            }
+            
+            const autoDetectedInfo = `${os}, ${ram}, ${cpu}`;
+            
+            // Populate the machine details field with auto-detected info if it's empty
+            const machineDetailsInput = document.getElementById('machine-details');
+            if (machineDetailsInput && !machineDetailsInput.value) {
+                machineDetailsInput.value = autoDetectedInfo;
+            }
+            
+            return {
+                os,
+                ram,
+                cpu,
+                formatted: autoDetectedInfo
+            };
+        }
+        
+        // System info for current machine
+        const systemInfo = getSystemInfo();
+        
+        // Function to get current machine info (user-entered or auto-detected)
+        function getCurrentMachineInfo() {
+            const machineDetailsInput = document.getElementById('machine-details');
+            if (machineDetailsInput && machineDetailsInput.value.trim()) {
+                // Use user-provided info if available
+                const userInfo = machineDetailsInput.value.trim();
+                // Parse into components for better structured data
+                const parts = userInfo.split(',').map(part => part.trim());
+                return {
+                    os: parts[0] || "Unknown OS",
+                    ram: parts.length > 1 ? parts[1] : "Unknown",
+                    cpu: parts.length > 2 ? parts[2] : "Unknown",
+                    formatted: userInfo,
+                    userProvided: true
+                };
+            } else {
+                // Fall back to auto-detected info
+                return systemInfo;
+            }
+        }
+        
         // Function to generate data of specified size in MB
         function generateDataOfSize(sizeInMB) {
             const bytesPerMB = 1024 * 1024;
@@ -549,6 +623,9 @@
             // Calculate throughput in MB per second
             const throughput = parseFloat(sizeInMB) / (copyTimeMs / 1000);
             
+            // Get current machine info - user-provided or auto-detected
+            const machineInfo = getCurrentMachineInfo();
+            
             const record = {
                 datetime: now.toISOString(),
                 totalSizeMB: parseFloat(sizeInMB),
@@ -557,7 +634,8 @@
                 formatSizes: formatSizes,
                 sizePerType: parseFloat(sizeInMB) / types.length,
                 throughput: throughput,
-                highlighted: false // Add highlighted property
+                highlighted: false,
+                systemInfo: machineInfo // Use current machine info
             };
             
             clipboardRecords.push(record);
@@ -599,6 +677,11 @@
                 // Format the sizes of each format nicely for display
                 const formatSizesHtml = formatSizesDisplay(record.formatSizes);
                 
+                // Handle system info display
+                const systemInfoDisplay = record.systemInfo && record.systemInfo.formatted ? 
+                    record.systemInfo.formatted : 
+                    (systemInfo ? systemInfo.formatted : "Unknown System");
+                
                 row.innerHTML = `
                     <td>${index + 1}</td>
                     <td>${timeFormatted}</td>
@@ -609,6 +692,7 @@
                     <td>${record.sizePerType ? record.sizePerType.toFixed(2) : 'N/A'}</td>
                     <td>${formatSizesHtml}</td>
                     <td>${record.types.join(', ')}</td>
+                    <td>${systemInfoDisplay}</td>
                     <td><input type="checkbox" class="highlight-checkbox" data-index="${index}" ${record.highlighted ? 'checked' : ''}></td>
                     <td>
                         <button class="delete-record" data-index="${index}">Delete</button>
@@ -694,14 +778,19 @@
                 return;
             }
             
-            const headers = ['Timestamp', 'Size (MB)', 'Duration (ms)', 'Throughput (MB/s)', 'NumFormats', 'Size/Type (MB)', 'Format Sizes', 'Formats'];
+            const headers = ['Timestamp', 'Size (MB)', 'Duration (ms)', 'Throughput (MB/s)', 'NumFormats', 'Size/Type (MB)', 'Format Sizes', 'Formats', 'Machine'];
             
             let csvContent = headers.join(',') + '\n';
             
             clipboardRecords.forEach(record => {
-                // Format sizes as base64 encoded string for CSV to avoid parsing issues
+                // Format sizes as JSON string for CSV (without base64 encoding)
                 const formatSizesStr = record.formatSizes ? 
-                    btoa(JSON.stringify(record.formatSizes)) : 'N/A';
+                    `"${JSON.stringify(record.formatSizes).replace(/"/g, '""')}"` : '"N/A"';
+                
+                // Get system info display string
+                const systemInfoStr = record.systemInfo && record.systemInfo.formatted ? 
+                    `"${record.systemInfo.formatted}"` : 
+                    `"${systemInfo.formatted}"`;
                 
                 const row = [
                     record.datetime,
@@ -710,8 +799,9 @@
                     record.throughput ? record.throughput.toFixed(2) : 'N/A',
                     record.types.length,
                     record.sizePerType ? record.sizePerType.toFixed(2) : 'N/A',
-                    `"${formatSizesStr}"`,
-                    '"' + record.types.join('; ') + '"'
+                    formatSizesStr,
+                    '"' + record.types.join('; ') + '"',
+                    systemInfoStr
                 ];
                 csvContent += row.join(',') + '\n';
             });
@@ -754,7 +844,8 @@
                         numFormats: headers.indexOf('NumFormats'),
                         sizePerType: headers.indexOf('Size/Type (MB)'),
                         formatSizes: headers.indexOf('Format Sizes'),
-                        formats: headers.indexOf('Formats')
+                        formats: headers.indexOf('Formats'),
+                        machine: headers.indexOf('Machine')
                     };
                     
                     // Check if required columns are present
@@ -771,56 +862,74 @@
                         const line = lines[i].trim();
                         if (!line) continue; // Skip empty lines
                         
-                        // Handle quoted fields with commas inside
-                        const values = [];
-                        let inQuote = false;
-                        let currentValue = '';
-                        
-                        for (let j = 0; j < line.length; j++) {
-                            const char = line[j];
-                            
-                            if (char === '"' && (j === 0 || line[j-1] !== '\\')) {
-                                inQuote = !inQuote;
-                            } else if (char === ',' && !inQuote) {
-                                values.push(currentValue);
-                                currentValue = '';
-                            } else {
-                                currentValue += char;
-                            }
-                        }
-                        values.push(currentValue); // Add the last value
-                        
                         try {
+                            // Parse the CSV line properly handling quoted fields
+                            const values = parseCSVLine(line);
+                            
                             // Parse timestamp
-                            const timestamp = values[colIndexes.timestamp].replace(/"/g, '');
+                            const timestamp = values[colIndexes.timestamp]?.replace(/"/g, '') || '';
+                            if (!timestamp) {
+                                throw new Error("Missing timestamp");
+                            }
                             
                             // Parse formats
-                            const formatsStr = values[colIndexes.formats].replace(/"/g, '');
+                            const formatsStr = values[colIndexes.formats]?.replace(/"/g, '') || '';
                             const types = formatsStr.split(';').map(type => type.trim()).filter(type => type);
                             
                             // Parse format sizes if available
                             let formatSizes = {};
                             if (colIndexes.formatSizes !== -1 && values[colIndexes.formatSizes]) {
                                 try {
-                                    // Clean up the string and check if it's base64 encoded
-                                    const formatSizesStr = values[colIndexes.formatSizes].replace(/"/g, '');
+                                    // Get the raw format sizes string
+                                    let formatSizesStr = values[colIndexes.formatSizes];
                                     
-                                    if (formatSizesStr !== 'N/A') {
+                                    // Remove surrounding quotes if present
+                                    if (formatSizesStr.startsWith('"') && formatSizesStr.endsWith('"')) {
+                                        formatSizesStr = formatSizesStr.substring(1, formatSizesStr.length - 1);
+                                    }
+                                    
+                                    // Restore double quotes in JSON that were escaped as "" in CSV
+                                    formatSizesStr = formatSizesStr.replace(/""/g, '"');
+                                    
+                                    if (formatSizesStr && formatSizesStr.toLowerCase() !== 'n/a') {
                                         try {
-                                            // Try to decode as base64 first (newer format)
-                                            const decoded = atob(formatSizesStr);
-                                            formatSizes = JSON.parse(decoded);
-                                        } catch (decodeErr) {
-                                            // Fall back to legacy format with semicolons
-                                            const legacyStr = formatSizesStr.replace(/;/g, ',');
-                                            formatSizes = JSON.parse(legacyStr);
+                                            // First try to parse as regular JSON
+                                            formatSizes = JSON.parse(formatSizesStr);
+                                        } catch (jsonErr) {
+                                            try {
+                                                // Next, try to decode as base64 (for backward compatibility)
+                                                const decoded = atob(formatSizesStr);
+                                                formatSizes = JSON.parse(decoded);
+                                            } catch (decodeErr) {
+                                                // Last resort: try to fix common JSON issues
+                                                log(`Attempting to repair malformed JSON: ${formatSizesStr.substring(0, 50)}...`, "info");
+                                                const repaired = formatSizesStr
+                                                    .replace(/;/g, ',')         // Replace semicolons with commas
+                                                    .replace(/'/g, '"')         // Replace single quotes with double quotes
+                                                    .replace(/([{,]\s*)(\w+):/g, '$1"$2":'); // Add quotes to keys
+                                                
+                                                formatSizes = JSON.parse(repaired);
+                                            }
                                         }
                                     }
                                 } catch (e) {
                                     log(`Error parsing format sizes for row ${i}: ${e.message}`, "error");
-                                    // Continue with empty formatSizes rather than skipping the record
-                                    formatSizes = {};
+                                    formatSizes = {}; // Continue with empty formatSizes
                                 }
+                            }
+                            
+                            // Parse machine info if available
+                            const machineStr = values[colIndexes.machine]?.replace(/"/g, '').trim() || '';
+                            let recordSystemInfo = null;
+                            if (machineStr && machineStr !== 'N/A') {
+                                const parts = machineStr.split(',').map(part => part.trim());
+                                recordSystemInfo = {
+                                    os: parts[0] || "Unknown OS",
+                                    ram: parts.length > 1 ? parts[1] : "Unknown",
+                                    cpu: parts.length > 2 ? parts[2] : "Unknown",
+                                    formatted: machineStr,
+                                    userProvided: true
+                                };
                             }
                             
                             // Create record object
@@ -832,7 +941,8 @@
                                 formatSizes: formatSizes,
                                 sizePerType: parseFloat(values[colIndexes.sizePerType]) || 0,
                                 throughput: parseFloat(values[colIndexes.throughput]) || 0,
-                                highlighted: false
+                                highlighted: false,
+                                systemInfo: recordSystemInfo || systemInfo // Use current system info if not available
                             };
                             
                             importedRecords.push(record);
@@ -871,6 +981,44 @@
             };
             
             reader.readAsText(file);
+        }
+        
+        // Helper function to properly parse a CSV line with quoted fields
+        function parseCSVLine(line) {
+            const result = [];
+            let inQuote = false;
+            let currentValue = '';
+            let i = 0;
+            
+            while (i < line.length) {
+                const char = line[i];
+                const nextChar = line[i + 1];
+                
+                if (char === '"') {
+                    if (inQuote && nextChar === '"') {
+                        // Handle escaped quotes ("") inside quoted fields
+                        currentValue += '"';
+                        i++;  // Skip the next quote
+                    } else {
+                        // Toggle quote mode
+                        inQuote = !inQuote;
+                    }
+                } else if (char === ',' && !inQuote) {
+                    // End of field
+                    result.push(currentValue);
+                    currentValue = '';
+                } else {
+                    // Regular character
+                    currentValue += char;
+                }
+                
+                i++;
+            }
+            
+            // Add the last field
+            result.push(currentValue);
+            
+            return result;
         }
 
         document.getElementById('export-records').addEventListener('click', () => {
@@ -1251,6 +1399,14 @@
 
         document.getElementById('import-records').addEventListener('click', () => {
             document.getElementById('csv-file-input').click();
+        });
+
+        // Add event listener for auto-detect button
+        document.getElementById('detect-machine-btn').addEventListener('click', () => {
+            // Get system information and update the input field
+            const detectedInfo = getSystemInfo();
+            document.getElementById('machine-details').value = detectedInfo.formatted;
+            log("Machine details auto-detected", "info");
         });
     </script>
 </body>
