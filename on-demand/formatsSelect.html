@@ -196,6 +196,8 @@
                     <button id="import-records">Import CSV</button>
                     <button id="rerun-all-btn">Rerun All</button>
                     <button id="rerun-all-new-btn">Re-run all (new)</button>
+                    <button id="load-seed-btn">Load Seed</button>
+                    <button id="copy-for-seed-btn">Copy table for seed</button>
                     <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
                 </div>
                 <table class="records-table" id="records-table">
@@ -222,6 +224,205 @@
             </div>
         </div>
     </div>
+    <script>
+    const seededClipboardRecords = [
+    {
+        "datetime": "2025-03-28T07:47:40.329Z",
+        "totalSizeMB": 50,
+        "copyTimeMs": 164.6,
+        "types": [
+            "text/plain"
+        ],
+        "formatSizes": {
+            "text/plain": 50
+        },
+        "sizePerType": 50,
+        "throughput": 303.77,
+        "highlighted": false,
+        "systemInfo": {
+            "os": "MacOS",
+            "ram": "8 GB",
+            "cpu": "12 Cores",
+            "formatted": "MacOS, 8 GB, 12 Cores",
+            "userProvided": true
+        }
+    },
+    {
+        "datetime": "2025-03-28T07:47:46.296Z",
+        "totalSizeMB": 50,
+        "copyTimeMs": 158.4,
+        "types": [
+            "text/plain"
+        ],
+        "formatSizes": {
+            "text/plain": 50
+        },
+        "sizePerType": 50,
+        "throughput": 315.66,
+        "highlighted": false,
+        "systemInfo": {
+            "os": "MacOS",
+            "ram": "8 GB",
+            "cpu": "12 Cores",
+            "formatted": "MacOS, 8 GB, 12 Cores",
+            "userProvided": true
+        }
+    },
+    {
+        "datetime": "2025-03-28T07:48:11.737Z",
+        "totalSizeMB": 50,
+        "copyTimeMs": 175.6,
+        "types": [
+            "text/plain"
+        ],
+        "formatSizes": {
+            "text/plain": 50
+        },
+        "sizePerType": 50,
+        "throughput": 284.74,
+        "highlighted": false,
+        "systemInfo": {
+            "os": "MacOS",
+            "ram": "8 GB",
+            "cpu": "12 Cores",
+            "formatted": "MacOS, 8 GB, 12 Cores",
+            "userProvided": true
+        }
+    },
+    {
+        "datetime": "2025-03-28T07:48:12.795Z",
+        "totalSizeMB": 50,
+        "copyTimeMs": 155,
+        "types": [
+            "text/plain"
+        ],
+        "formatSizes": {
+            "text/plain": 50
+        },
+        "sizePerType": 50,
+        "throughput": 322.58,
+        "highlighted": false,
+        "systemInfo": {
+            "os": "MacOS",
+            "ram": "8 GB",
+            "cpu": "12 Cores",
+            "formatted": "MacOS, 8 GB, 12 Cores",
+            "userProvided": true
+        }
+    },
+    {
+        "datetime": "2025-03-28T07:48:23.067Z",
+        "totalSizeMB": 50,
+        "copyTimeMs": 474.7,
+        "types": [
+            "text/html"
+        ],
+        "formatSizes": {
+            "text/html": 50
+        },
+        "sizePerType": 50,
+        "throughput": 105.33,
+        "highlighted": false,
+        "systemInfo": {
+            "os": "MacOS",
+            "ram": "8 GB",
+            "cpu": "12 Cores",
+            "formatted": "MacOS, 8 GB, 12 Cores",
+            "userProvided": true
+        }
+    },
+    {
+        "datetime": "2025-03-28T07:48:29.100Z",
+        "totalSizeMB": 50,
+        "copyTimeMs": 475.4,
+        "types": [
+            "text/html"
+        ],
+        "formatSizes": {
+            "text/html": 50
+        },
+        "sizePerType": 50,
+        "throughput": 105.17,
+        "highlighted": false,
+        "systemInfo": {
+            "os": "MacOS",
+            "ram": "8 GB",
+            "cpu": "12 Cores",
+            "formatted": "MacOS, 8 GB, 12 Cores",
+            "userProvided": true
+        }
+    },
+    {
+        "datetime": "2025-03-28T07:48:38.361Z",
+        "totalSizeMB": 100,
+        "copyTimeMs": 605,
+        "types": [
+            "text/plain",
+            "text/html"
+        ],
+        "formatSizes": {
+            "text/plain": 50,
+            "text/html": 50
+        },
+        "sizePerType": 50,
+        "throughput": 165.29,
+        "highlighted": false,
+        "systemInfo": {
+            "os": "MacOS",
+            "ram": "8 GB",
+            "cpu": "12 Cores",
+            "formatted": "MacOS, 8 GB, 12 Cores",
+            "userProvided": true
+        }
+    },
+    {
+        "datetime": "2025-03-28T07:48:46.152Z",
+        "totalSizeMB": 100,
+        "copyTimeMs": 607.9,
+        "types": [
+            "text/plain",
+            "text/html"
+        ],
+        "formatSizes": {
+            "text/plain": 50,
+            "text/html": 50
+        },
+        "sizePerType": 50,
+        "throughput": 164.5,
+        "highlighted": false,
+        "systemInfo": {
+            "os": "MacOS",
+            "ram": "8 GB",
+            "cpu": "12 Cores",
+            "formatted": "MacOS, 8 GB, 12 Cores",
+            "userProvided": true
+        }
+    },
+    {
+        "datetime": "2025-03-28T07:48:50.673Z",
+        "totalSizeMB": 100,
+        "copyTimeMs": 587.8,
+        "types": [
+            "text/plain",
+            "text/html"
+        ],
+        "formatSizes": {
+            "text/plain": 50,
+            "text/html": 50
+        },
+        "sizePerType": 50,
+        "throughput": 170.13,
+        "highlighted": false,
+        "systemInfo": {
+            "os": "MacOS",
+            "ram": "8 GB",
+            "cpu": "12 Cores",
+            "formatted": "MacOS, 8 GB, 12 Cores",
+            "userProvided": true
+        }
+    }
+];
+    </script>
 
     <script>
         // Global variables
@@ -1087,6 +1288,43 @@
             logContainer.scrollTop = logContainer.scrollHeight;
         }
 
+        // Function to load seeded records into the table
+        function loadSeededRecords() {
+            if (seededClipboardRecords && seededClipboardRecords.length > 0) {
+                clipboardRecords = JSON.parse(JSON.stringify(seededClipboardRecords)); // Deep copy
+                updateRecordsTable();
+                saveRecordsToLocalStorage();
+                log(`Loaded ${clipboardRecords.length} seeded records`, "success");
+            } else {
+                log("No seeded records found", "error");
+            }
+        }
+        
+        // Function to copy current records table as JS code for seeding
+        function copyRecordsAsJSCode() {
+            if (clipboardRecords.length === 0) {
+                log("No records to copy", "error");
+                return;
+            }
+            
+            try {
+                // Format the records as a pretty-printed JavaScript array literal
+                const jsCode = `const seededClipboardRecords = ${JSON.stringify(clipboardRecords, null, 4)};`;
+                
+                // Copy to clipboard
+                navigator.clipboard.writeText(jsCode)
+                    .then(() => {
+                        log(`Copied code for ${clipboardRecords.length} records to clipboard`, "success");
+                        log("Paste this code into your HTML file to replace the seededClipboardRecords array", "info");
+                    })
+                    .catch(err => {
+                        log(`Failed to copy to clipboard: ${err.message}`, "error");
+                    });
+            } catch (e) {
+                log(`Error formatting records as JS code: ${e.message}`, "error");
+            }
+        }
+
         // Event listeners
         document.getElementById('write-btn').addEventListener('click', async () => {
             const currentSize = parseInt(document.getElementById('data-size').value) || 50;
@@ -1142,9 +1380,9 @@
         });
         
         // Add event listener for import CSV button
-        // document.getElementById('import-records').addEventListener('click', () => {
-        //     document.getElementById('csv-file-input').click();
-        // });
+        document.getElementById('import-records').addEventListener('click', () => {
+            document.getElementById('csv-file-input').click();
+        });
         
         // Add event listener for file input change
         document.getElementById('csv-file-input').addEventListener('change', function(e) {
@@ -1407,6 +1645,16 @@
             const detectedInfo = getSystemInfo();
             document.getElementById('machine-details').value = detectedInfo.formatted;
             log("Machine details auto-detected", "info");
+        });
+
+        // Add event listener for "Load Seed" button
+        document.getElementById('load-seed-btn').addEventListener('click', () => {
+            loadSeededRecords();
+        });
+        
+        // Add event listener for "Copy table for seed" button
+        document.getElementById('copy-for-seed-btn').addEventListener('click', () => {
+            copyRecordsAsJSCode();
         });
     </script>
 </body>
