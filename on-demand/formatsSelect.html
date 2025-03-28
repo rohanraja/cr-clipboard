@@ -155,6 +155,7 @@
                 <button id="clear-records">Clear Records</button>
                 <button id="record-btn">Record</button>
                 <button id="export-records">Export as CSV</button>
+                <button id="upload-csv-btn">Upload CSV</button>
                 <button id="import-records">Import CSV</button>
                 <button id="rerun-all-btn">Rerun All</button>
                 <button id="rerun-all-new-btn">Re-run all (new)</button>
@@ -1055,6 +1056,77 @@
             log(`Records exported as CSV (${recordsToExport.length} records, excluding seeded records)`, "success");
         }
 
+        // Function to upload records as CSV to server
+        function uploadRecordsToServer() {
+            // Filter out seed records before upload
+            const recordsToExport = clipboardRecords.filter(record => 
+                !record.isSeedRecord && 
+                (!record.systemInfo || record.systemInfo.formatted !== "SEED")
+            );
+            
+            if (recordsToExport.length === 0) {
+                log("No non-seed records to upload", "error");
+                return;
+            }
+            
+            const headers = ['Timestamp', 'Size (MB)', 'Duration (ms)', 'Throughput (MB/s)', 'NumFormats', 'Size/Type (MB)', 'Format Sizes', 'Formats', 'Machine'];
+            
+            let csvContent = headers.join(',') + '\n';
+            
+            recordsToExport.forEach(record => {
+                // Format sizes as JSON string for CSV (without base64 encoding)
+                const formatSizesStr = record.formatSizes ? 
+                    `"${JSON.stringify(record.formatSizes).replace(/"/g, '""')}"` : '"N/A"';
+                
+                // Get system info display string
+                const systemInfoStr = record.systemInfo && record.systemInfo.formatted ? 
+                    `"${record.systemInfo.formatted}"` : 
+                    `"${systemInfo.formatted}"`;
+                
+                const row = [
+                    record.datetime,
+                    record.totalSizeMB.toFixed(2),
+                    record.copyTimeMs.toFixed(2),
+                    record.throughput ? record.throughput.toFixed(2) : 'N/A',
+                    record.types.length,
+                    record.sizePerType ? record.sizePerType.toFixed(2) : 'N/A',
+                    formatSizesStr,
+                    '"' + record.types.join('; ') + '"',
+                    systemInfoStr
+                ];
+                csvContent += row.join(',') + '\n';
+            });
+            
+            // Create a Blob from the CSV content
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            
+            // Create FormData for the upload
+            const formData = new FormData();
+            formData.append('file', blob, `clipboard-records-${new Date().toISOString().slice(0, 10)}.csv`);
+            
+            // Upload to server
+            log("Uploading CSV file to server...", "info");
+            
+            fetch('http://20.244.33.135:5044/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Server responded with status ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                log(`Successfully uploaded CSV with ${recordsToExport.length} records`, "success");
+                log(`Server response: ${JSON.stringify(data)}`, "info");
+            })
+            .catch(error => {
+                log(`Error uploading CSV: ${error.message}`, "error");
+                log("Make sure the server is running at http://localhost:5044", "info");
+            });
+        }
+
         // Function to import records from CSV
         function importRecordsFromCSV(file) {
             const reader = new FileReader();
@@ -1717,6 +1789,11 @@
         // Add event listener for "Copy table for seed" button
         document.getElementById('copy-for-seed-btn').addEventListener('click', () => {
             copyRecordsAsJSCode();
+        });
+
+        // Add event listener for "Upload CSV" button
+        document.getElementById('upload-csv-btn').addEventListener('click', () => {
+            uploadRecordsToServer();
         });
     </script>
 </body>

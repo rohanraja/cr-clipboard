@@ -2,6 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const cors = require('cors'); // Add cors package
 const app = express();
 const port = process.env.PORT || 5044;
 
@@ -11,6 +12,9 @@ if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
     console.log(`Created uploads directory at ${uploadsDir}`);
 }
+
+// Enable CORS for all routes
+app.use(cors());
 
 // Configure multer storage
 const storage = multer.diskStorage({
