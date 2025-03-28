@@ -2,7 +2,8 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const cors = require('cors'); // Add cors package
+const cors = require('cors');
+const https = require('https');
 const app = express();
 const port = process.env.PORT || 5044;
 
@@ -12,6 +13,28 @@ if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
     console.log(`Created uploads directory at ${uploadsDir}`);
 }
+
+// Create SSL directory if it doesn't exist
+const sslDir = path.join(__dirname, 'ssl');
+if (!fs.existsSync(sslDir)) {
+    fs.mkdirSync(sslDir, { recursive: true });
+    console.log(`Created ssl directory at ${sslDir}`);
+    
+    // Add a note about generating SSL certificates
+    console.log('Please add your SSL certificates to the ssl directory:');
+    console.log('- key.pem: Your private key');
+    console.log('- cert.pem: Your certificate');
+    console.log('\nYou can generate self-signed certificates with this command:');
+    console.log('openssl req -x509 -newkey rsa:2048 -keyout ssl/key.pem -out ssl/cert.pem -days 365 -nodes');
+    
+    process.exit(1); // Exit as we need certificates to proceed
+}
+
+// Load SSL certificates
+const sslOptions = {
+    key: fs.readFileSync(path.join(__dirname, 'ssl', 'key.pem')),
+    cert: fs.readFileSync(path.join(__dirname, 'ssl', 'cert.pem'))
+};
 
 // Enable CORS for all routes
 app.use(cors());
@@ -116,9 +139,11 @@ app.use((err, req, res, next) => {
     res.status(500).json({ error: 'Internal server error' });
 });
 
-// Start the server
-app.listen(port, () => {
-    console.log(`File upload server running at http://localhost:${port}`);
-    console.log(`Upload files to: http://localhost:${port}/upload`);
+// Create and start the HTTPS server
+const httpsServer = https.createServer(sslOptions, app);
+
+httpsServer.listen(port, () => {
+    console.log(`HTTPS File upload server running at https://localhost:${port}`);
+    console.log(`Upload files to: https://localhost:${port}/upload`);
     console.log(`Files will be saved to: ${uploadsDir}`);
 });
