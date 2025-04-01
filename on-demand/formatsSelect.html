@@ -212,14 +212,14 @@
                         <input type="checkbox" id="format-text-plain" checked>
                         <label for="format-text-plain">text/plain</label>
                         <input type="number" id="format-text-plain-size" class="format-size" value="50" min="1" max="100">
-                        <label for="format-text-plain-size">MB</label>
+                        <label for="format-text-plain-size">KB</label>
                     </div>
                     
                     <div class="format-option">
                         <input type="checkbox" id="format-text-html">
                         <label for="format-text-html">text/html</label>
                         <input type="number" id="format-text-html-size" class="format-size" value="50" min="1" max="100">
-                        <label for="format-text-html-size">MB</label>
+                        <label for="format-text-html-size">KB</label>
                     </div>
                     
                     <div class="format-option">
@@ -228,7 +228,7 @@
                         <input type="number" id="custom-format-count" class="custom-format-count" value="1" min="1" max="10">
                         <label for="custom-format-count">count</label>
                         <input type="number" id="format-custom-size" class="format-size" value="50" min="1" max="100">
-                        <label for="format-custom-size">MB</label>
+                        <label for="format-custom-size">KB</label>
                     </div>
                 </div>
                 
@@ -530,7 +530,7 @@
         
         // Function to generate data of specified size in MB
         function generateDataOfSize(sizeInMB) {
-            const bytesPerMB = 1024 * 1024;
+            const bytesPerMB = 1024 ;
             const targetBytes = sizeInMB * bytesPerMB;
             
             log(`Generating ${sizeInMB} MB of data...`);
