@@ -2015,7 +2015,7 @@
                     
                     // Process each format and its size from the record
                     Object.entries(record.formatSizes).forEach(([format, size]) => {
-                        sizesDictionary[format] = size;
+                        sizesDictionary[format] = size*1024;
                     });
                     
                     if (Object.keys(sizesDictionary).length === 0) {
