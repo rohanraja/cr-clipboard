@@ -213,6 +213,10 @@
                         <label for="format-text-plain">text/plain</label>
                         <input type="number" id="format-text-plain-size" class="format-size" value="50" min="1" max="100">
                         <label for="format-text-plain-size">KB</label>
+                        <input type="number" id="format-text-plain-increment" class="format-size" value="10" min="1" max="100">
+                        <label for="format-text-plain-increment">Increment</label>
+                        <input type="number" id="format-text-plain-count" class="custom-format-count" value="3" min="1" max="10">
+                        <label for="format-text-plain-count">Count</label>
                     </div>
                     
                     <div class="format-option">
@@ -220,6 +224,10 @@
                         <label for="format-text-html">text/html</label>
                         <input type="number" id="format-text-html-size" class="format-size" value="50" min="1" max="100">
                         <label for="format-text-html-size">KB</label>
+                        <input type="number" id="format-text-html-increment" class="format-size" value="10" min="1" max="100">
+                        <label for="format-text-html-increment">Increment</label>
+                        <input type="number" id="format-text-html-count" class="custom-format-count" value="3" min="1" max="10">
+                        <label for="format-text-html-count">Count</label>
                     </div>
                     
                     <div class="format-option">
@@ -229,6 +237,10 @@
                         <label for="custom-format-count">count</label>
                         <input type="number" id="format-custom-size" class="format-size" value="50" min="1" max="100">
                         <label for="format-custom-size">KB</label>
+                        <input type="number" id="format-custom-increment" class="format-size" value="10" min="1" max="100">
+                        <label for="format-custom-increment">Increment</label>
+                        <input type="number" id="format-custom-count" class="custom-format-count" value="3" min="1" max="10">
+                        <label for="format-custom-count">Count</label>
                     </div>
                 </div>
                 
@@ -236,6 +248,7 @@
                     <div class="group-title">Write Operations</div>
                     <button id="write-btn">Write to Clipboard</button>
                     <button id="run-experiment-btn">Run Experiment</button>
+                    <button id="run-grid-experiment-btn">Run Grid Experiment</button>
                 </div>
                 
                 <div class="button-group">
@@ -255,491 +268,21 @@
     <script>
     const seededClipboardRecords = [
     {
-        "datetime": "2025-04-01T10:08:02.051Z",
-        "totalSizeMB": 0,
-        "copyTimeMs": 4,
-        "types": [
-            "text/plain"
-        ],
-        "formatSizes": {
-            "text/plain": 0
-        },
-        "sizePerType": 0,
-        "throughput": 0,
-        "highlighted": false,
-        "systemInfo": {
-            "os": "MacOS",
-            "ram": "8 GB",
-            "cpu": "12 Cores",
-            "formatted": "MacOS, 8 GB, 12 Cores",
-            "userProvided": true
-        }
-    },
-    {
-        "datetime": "2025-04-01T10:08:41.444Z",
-        "totalSizeMB": 2.13,
-        "copyTimeMs": 39.099999994039536,
+        "datetime": "2025-04-09T05:19:21.011Z",
+        "totalSizeMB": 9.81,
+        "copyTimeMs": 58.199999928474426,
         "types": [
             "web custom/format-1",
-            "web custom/format-2",
             "text/plain",
             "text/html"
         ],
         "formatSizes": {
-            "web custom/format-1": 0.2,
-            "web custom/format-2": 0.2,
-            "text/plain": 0.08,
-            "text/html": 1.65
+            "web custom/format-1": 4.88,
+            "text/plain": 0.05,
+            "text/html": 4.88
         },
-        "sizePerType": 0.5325,
-        "throughput": 54.47570333311254,
-        "highlighted": false,
-        "systemInfo": {
-            "os": "MacOS",
-            "ram": "8 GB",
-            "cpu": "12 Cores",
-            "formatted": "MacOS, 8 GB, 12 Cores",
-            "userProvided": true
-        }
-    },
-    {
-        "datetime": "2025-04-01T10:08:46.968Z",
-        "totalSizeMB": 2.13,
-        "copyTimeMs": 36.69999998807907,
-        "types": [
-            "web custom/format-1",
-            "web custom/format-2",
-            "text/plain",
-            "text/html"
-        ],
-        "formatSizes": {
-            "web custom/format-1": 0.2,
-            "web custom/format-2": 0.2,
-            "text/plain": 0.08,
-            "text/html": 1.65
-        },
-        "sizePerType": 0.5325,
-        "throughput": 58.038147157816574,
-        "highlighted": false,
-        "systemInfo": {
-            "os": "MacOS",
-            "ram": "8 GB",
-            "cpu": "12 Cores",
-            "formatted": "MacOS, 8 GB, 12 Cores",
-            "userProvided": true
-        }
-    },
-    {
-        "datetime": "2025-04-01T10:08:48.323Z",
-        "totalSizeMB": 2.13,
-        "copyTimeMs": 26.69999998807907,
-        "types": [
-            "web custom/format-1",
-            "web custom/format-2",
-            "text/plain",
-            "text/html"
-        ],
-        "formatSizes": {
-            "web custom/format-1": 0.2,
-            "web custom/format-2": 0.2,
-            "text/plain": 0.08,
-            "text/html": 1.65
-        },
-        "sizePerType": 0.5325,
-        "throughput": 79.7752809344942,
-        "highlighted": false,
-        "systemInfo": {
-            "os": "MacOS",
-            "ram": "8 GB",
-            "cpu": "12 Cores",
-            "formatted": "MacOS, 8 GB, 12 Cores",
-            "userProvided": true
-        }
-    },
-    {
-        "datetime": "2025-04-01T10:08:50.038Z",
-        "totalSizeMB": 2.13,
-        "copyTimeMs": 27.900000005960464,
-        "types": [
-            "web custom/format-1",
-            "web custom/format-2",
-            "text/plain",
-            "text/html"
-        ],
-        "formatSizes": {
-            "web custom/format-1": 0.2,
-            "web custom/format-2": 0.2,
-            "text/plain": 0.08,
-            "text/html": 1.65
-        },
-        "sizePerType": 0.5325,
-        "throughput": 76.34408600519546,
-        "highlighted": false,
-        "systemInfo": {
-            "os": "MacOS",
-            "ram": "8 GB",
-            "cpu": "12 Cores",
-            "formatted": "MacOS, 8 GB, 12 Cores",
-            "userProvided": true
-        }
-    },
-    {
-        "datetime": "2025-04-01T10:08:51.879Z",
-        "totalSizeMB": 2.13,
-        "copyTimeMs": 33,
-        "types": [
-            "web custom/format-1",
-            "web custom/format-2",
-            "text/plain",
-            "text/html"
-        ],
-        "formatSizes": {
-            "web custom/format-1": 0.2,
-            "web custom/format-2": 0.2,
-            "text/plain": 0.08,
-            "text/html": 1.65
-        },
-        "sizePerType": 0.5325,
-        "throughput": 64.54545454545453,
-        "highlighted": false,
-        "systemInfo": {
-            "os": "MacOS",
-            "ram": "8 GB",
-            "cpu": "12 Cores",
-            "formatted": "MacOS, 8 GB, 12 Cores",
-            "userProvided": true
-        }
-    },
-    {
-        "datetime": "2025-04-01T10:09:11.433Z",
-        "totalSizeMB": 0.08,
-        "copyTimeMs": 19.19999998807907,
-        "types": [
-            "text/plain"
-        ],
-        "formatSizes": {
-            "text/plain": 0.08
-        },
-        "sizePerType": 0.08,
-        "throughput": 4.166666669253674,
-        "highlighted": false,
-        "systemInfo": {
-            "os": "MacOS",
-            "ram": "8 GB",
-            "cpu": "12 Cores",
-            "formatted": "MacOS, 8 GB, 12 Cores",
-            "userProvided": true
-        }
-    },
-    {
-        "datetime": "2025-04-01T10:09:18.758Z",
-        "totalSizeMB": 0.08,
-        "copyTimeMs": 9,
-        "types": [
-            "text/plain"
-        ],
-        "formatSizes": {
-            "text/plain": 0.08
-        },
-        "sizePerType": 0.08,
-        "throughput": 8.88888888888889,
-        "highlighted": false,
-        "systemInfo": {
-            "os": "MacOS",
-            "ram": "8 GB",
-            "cpu": "12 Cores",
-            "formatted": "MacOS, 8 GB, 12 Cores",
-            "userProvided": true
-        }
-    },
-    {
-        "datetime": "2025-04-01T10:09:21.303Z",
-        "totalSizeMB": 0.08,
-        "copyTimeMs": 4.899999976158142,
-        "types": [
-            "text/plain"
-        ],
-        "formatSizes": {
-            "text/plain": 0.08
-        },
-        "sizePerType": 0.08,
-        "throughput": 16.32653069168466,
-        "highlighted": false,
-        "systemInfo": {
-            "os": "MacOS",
-            "ram": "8 GB",
-            "cpu": "12 Cores",
-            "formatted": "MacOS, 8 GB, 12 Cores",
-            "userProvided": true
-        }
-    },
-    {
-        "datetime": "2025-04-01T10:09:23.608Z",
-        "totalSizeMB": 0.08,
-        "copyTimeMs": 8.199999988079071,
-        "types": [
-            "text/plain"
-        ],
-        "formatSizes": {
-            "text/plain": 0.08
-        },
-        "sizePerType": 0.08,
-        "throughput": 9.75609757515875,
-        "highlighted": false,
-        "systemInfo": {
-            "os": "MacOS",
-            "ram": "8 GB",
-            "cpu": "12 Cores",
-            "formatted": "MacOS, 8 GB, 12 Cores",
-            "userProvided": true
-        }
-    },
-    {
-        "datetime": "2025-04-01T10:09:25.292Z",
-        "totalSizeMB": 0.08,
-        "copyTimeMs": 8.799999982118607,
-        "types": [
-            "text/plain"
-        ],
-        "formatSizes": {
-            "text/plain": 0.08
-        },
-        "sizePerType": 0.08,
-        "throughput": 9.090909109381606,
-        "highlighted": false,
-        "systemInfo": {
-            "os": "MacOS",
-            "ram": "8 GB",
-            "cpu": "12 Cores",
-            "formatted": "MacOS, 8 GB, 12 Cores",
-            "userProvided": true
-        }
-    },
-    {
-        "datetime": "2025-04-01T10:09:27.114Z",
-        "totalSizeMB": 0.08,
-        "copyTimeMs": 35.79999998211861,
-        "types": [
-            "text/plain"
-        ],
-        "formatSizes": {
-            "text/plain": 0.08
-        },
-        "sizePerType": 0.08,
-        "throughput": 2.2346368726245367,
-        "highlighted": false,
-        "systemInfo": {
-            "os": "MacOS",
-            "ram": "8 GB",
-            "cpu": "12 Cores",
-            "formatted": "MacOS, 8 GB, 12 Cores",
-            "userProvided": true
-        }
-    },
-    {
-        "datetime": "2025-04-01T10:09:29.855Z",
-        "totalSizeMB": 0.08,
-        "copyTimeMs": 6.5,
-        "types": [
-            "text/plain"
-        ],
-        "formatSizes": {
-            "text/plain": 0.08
-        },
-        "sizePerType": 0.08,
-        "throughput": 12.307692307692308,
-        "highlighted": false,
-        "systemInfo": {
-            "os": "MacOS",
-            "ram": "8 GB",
-            "cpu": "12 Cores",
-            "formatted": "MacOS, 8 GB, 12 Cores",
-            "userProvided": true
-        }
-    },
-    {
-        "datetime": "2025-04-01T10:09:36.992Z",
-        "totalSizeMB": 0.08,
-        "copyTimeMs": 9.199999988079071,
-        "types": [
-            "text/plain"
-        ],
-        "formatSizes": {
-            "text/plain": 0.08
-        },
-        "sizePerType": 0.08,
-        "throughput": 8.695652185180464,
-        "highlighted": false,
-        "systemInfo": {
-            "os": "MacOS",
-            "ram": "8 GB",
-            "cpu": "12 Cores",
-            "formatted": "MacOS, 8 GB, 12 Cores",
-            "userProvided": true
-        }
-    },
-    {
-        "datetime": "2025-04-01T10:09:40.424Z",
-        "totalSizeMB": 0.08,
-        "copyTimeMs": 5.899999976158142,
-        "types": [
-            "text/plain"
-        ],
-        "formatSizes": {
-            "text/plain": 0.08
-        },
-        "sizePerType": 0.08,
-        "throughput": 13.559322088691431,
-        "highlighted": false,
-        "systemInfo": {
-            "os": "MacOS",
-            "ram": "8 GB",
-            "cpu": "12 Cores",
-            "formatted": "MacOS, 8 GB, 12 Cores",
-            "userProvided": true
-        }
-    },
-    {
-        "datetime": "2025-04-01T10:09:42.475Z",
-        "totalSizeMB": 0.08,
-        "copyTimeMs": 7,
-        "types": [
-            "text/plain"
-        ],
-        "formatSizes": {
-            "text/plain": 0.08
-        },
-        "sizePerType": 0.08,
-        "throughput": 11.428571428571429,
-        "highlighted": false,
-        "systemInfo": {
-            "os": "MacOS",
-            "ram": "8 GB",
-            "cpu": "12 Cores",
-            "formatted": "MacOS, 8 GB, 12 Cores",
-            "userProvided": true
-        }
-    },
-    {
-        "datetime": "2025-04-01T10:09:43.852Z",
-        "totalSizeMB": 0.08,
-        "copyTimeMs": 5,
-        "types": [
-            "text/plain"
-        ],
-        "formatSizes": {
-            "text/plain": 0.08
-        },
-        "sizePerType": 0.08,
-        "throughput": 16,
-        "highlighted": false,
-        "systemInfo": {
-            "os": "MacOS",
-            "ram": "8 GB",
-            "cpu": "12 Cores",
-            "formatted": "MacOS, 8 GB, 12 Cores",
-            "userProvided": true
-        }
-    },
-    {
-        "datetime": "2025-04-01T10:10:01.540Z",
-        "totalSizeMB": 2.13,
-        "copyTimeMs": 40.20000001788139,
-        "types": [
-            "web custom/format-1",
-            "web custom/format-2",
-            "text/plain",
-            "text/html"
-        ],
-        "formatSizes": {
-            "web custom/format-1": 0.2,
-            "web custom/format-2": 0.2,
-            "text/plain": 0.08,
-            "text/html": 1.65
-        },
-        "sizePerType": 0.5325,
-        "throughput": 52.98507460329734,
-        "highlighted": false,
-        "systemInfo": {
-            "os": "MacOS",
-            "ram": "8 GB",
-            "cpu": "12 Cores",
-            "formatted": "MacOS, 8 GB, 12 Cores",
-            "userProvided": true
-        }
-    },
-    {
-        "datetime": "2025-04-01T10:10:02.810Z",
-        "totalSizeMB": 2.13,
-        "copyTimeMs": 37.5,
-        "types": [
-            "web custom/format-1",
-            "web custom/format-2",
-            "text/plain",
-            "text/html"
-        ],
-        "formatSizes": {
-            "web custom/format-1": 0.2,
-            "web custom/format-2": 0.2,
-            "text/plain": 0.08,
-            "text/html": 1.65
-        },
-        "sizePerType": 0.5325,
-        "throughput": 56.8,
-        "highlighted": false,
-        "systemInfo": {
-            "os": "MacOS",
-            "ram": "8 GB",
-            "cpu": "12 Cores",
-            "formatted": "MacOS, 8 GB, 12 Cores",
-            "userProvided": true
-        }
-    },
-    {
-        "datetime": "2025-04-01T10:10:03.885Z",
-        "totalSizeMB": 2.13,
-        "copyTimeMs": 34.30000001192093,
-        "types": [
-            "web custom/format-1",
-            "web custom/format-2",
-            "text/plain",
-            "text/html"
-        ],
-        "formatSizes": {
-            "web custom/format-1": 0.2,
-            "web custom/format-2": 0.2,
-            "text/plain": 0.08,
-            "text/html": 1.65
-        },
-        "sizePerType": 0.5325,
-        "throughput": 62.099125342849,
-        "highlighted": false,
-        "systemInfo": {
-            "os": "MacOS",
-            "ram": "8 GB",
-            "cpu": "12 Cores",
-            "formatted": "MacOS, 8 GB, 12 Cores",
-            "userProvided": true
-        }
-    },
-    {
-        "datetime": "2025-04-01T10:10:05.049Z",
-        "totalSizeMB": 2.13,
-        "copyTimeMs": 38.69999998807907,
-        "types": [
-            "web custom/format-1",
-            "web custom/format-2",
-            "text/plain",
-            "text/html"
-        ],
-        "formatSizes": {
-            "web custom/format-1": 0.2,
-            "web custom/format-2": 0.2,
-            "text/plain": 0.08,
-            "text/html": 1.65
-        },
-        "sizePerType": 0.5325,
-        "throughput": 55.038759706876306,
+        "sizePerType": 3.27,
+        "throughput": 168.55670123807758,
         "highlighted": false,
         "systemInfo": {
             "os": "MacOS",
@@ -1356,7 +899,7 @@
             log(`Records exported as CSV (${recordsToExport.length} records, excluding seeded records)`, "success");
         }
 
-        // Function to upload records as CSV to server
+        // Function to upload records to server
         function uploadRecordsToServer() {
             // Filter out seed records before upload
             const recordsToExport = clipboardRecords.filter(record => 
@@ -2040,6 +1583,142 @@
             }
         }
 
+        // Function to run a grid experiment with incrementing format sizes
+        async function runGridExperiment() {
+            const formats = getSelectedFormats();
+            if (formats.length === 0) {
+                log("Please select at least one format for grid experiment", "error");
+                return;
+            }
+            
+            log("Starting grid experiment...", "info");
+            
+            // Save original settings to restore later
+            const originalSettings = {
+                textPlain: document.getElementById('format-text-plain').checked,
+                textPlainSize: document.getElementById('format-text-plain-size').value,
+                textHtml: document.getElementById('format-text-html').checked,
+                textHtmlSize: document.getElementById('format-text-html-size').value,
+                custom: document.getElementById('format-custom').checked,
+                customCount: document.getElementById('custom-format-count').value,
+                customSize: document.getElementById('format-custom-size').value,
+                defaultSize: document.getElementById('data-size').value
+            };
+            
+            // Disable the button while running
+            const gridButton = document.getElementById('run-grid-experiment-btn');
+            gridButton.disabled = true;
+            gridButton.textContent = "Running Grid...";
+            
+            try {
+                // Create experiment configurations based on increments
+                const experimentConfigs = [];
+                
+                // For text/plain
+                if (formats.includes('text/plain')) {
+                    const baseSize = parseInt(document.getElementById('format-text-plain-size').value) || 50;
+                    const increment = parseInt(document.getElementById('format-text-plain-increment').value) || 10;
+                    const count = parseInt(document.getElementById('format-text-plain-count').value) || 3;
+                    
+                    for (let i = 0; i < count; i++) {
+                        const size = baseSize + (i * increment);
+                        const config = {};
+                        formats.forEach(f => config[f] = f === 'text/plain' ? size : 0);
+                        experimentConfigs.push(config);
+                    }
+                }
+                
+                // For text/html
+                if (formats.includes('text/html')) {
+                    const baseSize = parseInt(document.getElementById('format-text-html-size').value) || 50;
+                    const increment = parseInt(document.getElementById('format-text-html-increment').value) || 10;
+                    const count = parseInt(document.getElementById('format-text-html-count').value) || 3;
+                    
+                    for (let i = 0; i < count; i++) {
+                        const size = baseSize + (i * increment);
+                        const config = {};
+                        formats.forEach(f => config[f] = f === 'text/html' ? size : 0);
+                        experimentConfigs.push(config);
+                    }
+                }
+                
+                // For custom formats
+                const customFormats = formats.filter(f => f.startsWith('web custom/'));
+                if (customFormats.length > 0) {
+                    const baseSize = parseInt(document.getElementById('format-custom-size').value) || 50;
+                    const increment = parseInt(document.getElementById('format-custom-increment').value) || 10;
+                    const count = parseInt(document.getElementById('format-custom-count').value) || 3;
+                    
+                    for (let customFormat of customFormats) {
+                        for (let i = 0; i < count; i++) {
+                            const size = baseSize + (i * increment);
+                            const config = {};
+                            formats.forEach(f => config[f] = f === customFormat ? size : 0);
+                            experimentConfigs.push(config);
+                        }
+                    }
+                }
+                
+                log(`Created ${experimentConfigs.length} experiment configurations for grid`, "info");
+                
+                // Run each experiment configuration
+                for (let i = 0; i < experimentConfigs.length; i++) {
+                    const config = experimentConfigs[i];
+                    log(`Running grid experiment ${i+1}/${experimentConfigs.length}`, "info");
+                    
+                    // Create sizesDictionary where values of 0 are replaced with defaults
+                    const sizesDictionary = {};
+                    
+                    if (config['text/plain']) {
+                        sizesDictionary['text/plain'] = config['text/plain'];
+                    } else if (formats.includes('text/plain')) {
+                        sizesDictionary['text/plain'] = parseInt(document.getElementById('format-text-plain-size').value) || 50;
+                    }
+                    
+                    if (config['text/html']) {
+                        sizesDictionary['text/html'] = config['text/html'];
+                    } else if (formats.includes('text/html')) {
+                        sizesDictionary['text/html'] = parseInt(document.getElementById('format-text-html-size').value) || 50;
+                    }
+                    
+                    for (let customFormat of customFormats) {
+                        if (config[customFormat]) {
+                            sizesDictionary[customFormat] = config[customFormat];
+                        } else {
+                            sizesDictionary[customFormat] = parseInt(document.getElementById('format-custom-size').value) || 50;
+                        }
+                    }
+                    
+                    // Run the experiment
+                    await runExperiment(sizesDictionary);
+                    
+                    // Add a small delay between experiments
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+                
+                log(`Completed grid experiment with ${experimentConfigs.length} configurations`, "success");
+            } catch (error) {
+                log(`Error during grid experiment: ${error.message}`, "error");
+            } finally {
+                // Restore button state
+                gridButton.disabled = false;
+                gridButton.textContent = "Run Grid Experiment";
+                
+                // Restore original settings
+                document.getElementById('format-text-plain').checked = originalSettings.textPlain;
+                document.getElementById('format-text-plain-size').value = originalSettings.textPlainSize;
+                document.getElementById('format-text-html').checked = originalSettings.textHtml;
+                document.getElementById('format-text-html-size').value = originalSettings.textHtmlSize;
+                document.getElementById('format-custom').checked = originalSettings.custom;
+                document.getElementById('custom-format-count').value = originalSettings.customCount;
+                document.getElementById('format-custom-size').value = originalSettings.customSize;
+                document.getElementById('data-size').value = originalSettings.defaultSize;
+                
+                log("Grid experiment completed and original settings restored", "success");
+                scrollTableToBottom(); // Ensure the table is scrolled to bottom after all tests
+            }
+        }
+
         // Initial log message
         log("Clipboard Performance Test initialized");
         log("Steps: 1) Set data size and formats, 2) Write to clipboard, 3) Read and record results");
@@ -2094,6 +1773,11 @@
         // Add event listener for "Upload CSV" button
         document.getElementById('upload-csv-btn').addEventListener('click', () => {
             uploadRecordsToServer();
+        });
+
+        // Add event listener for "Run Grid Experiment" button
+        document.getElementById('run-grid-experiment-btn').addEventListener('click', () => {
+            runGridExperiment();
         });
     </script>
 </body>
