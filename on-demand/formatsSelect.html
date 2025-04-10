@@ -521,16 +521,16 @@
                     sizeTotal += sizeOfBlob;
                     
                     // Store format size in MB (using 2 bytes per character)
-                    const sizeMB = (sizeOfBlob * 2 / (1024 * 1024)).toFixed(2);
+                    const sizeMB = (sizeOfBlob * 2 / (1024 )).toFixed(2);
                     formatSizes[type] = parseFloat(sizeMB);
                     
-                    log(`Read ${sizeOfBlob} characters (${sizeMB} MB) from clipboard for type ${type}`);
+                    log(`Read ${sizeOfBlob} characters (${sizeMB} Kb) from clipboard for type ${type}`);
                 }
                 
                 const endTime = performance.now();
                 log(`Clipboard types: ${types.join(', ')}`);
 
-                const sizeMB = (sizeTotal * 2 / (1024 * 1024)).toFixed(2);
+                const sizeMB = (sizeTotal * 2 / (1024 )).toFixed(2);
                 // End timing
                 const timeTaken = endTime - startTime;
                 
@@ -724,7 +724,7 @@
             }
             
             return Object.entries(formatSizes)
-                .map(([format, size]) => `${format.split('/').pop()}: ${size} MB`)
+                .map(([format, size]) => `${format.split('/').pop()}: ${size} kB`)
                 .join('<br>');
         }
 
@@ -858,7 +858,7 @@
                 return;
             }
             
-            const headers = ['Timestamp', 'Size (MB)', 'Duration (ms)', 'Throughput (MB/s)', 'NumFormats', 'Size/Type (MB)', 'Format Sizes', 'Formats', 'Machine'];
+            const headers = ['Timestamp', 'Size (kB)', 'Duration (ms)', 'Throughput (MB/s)', 'NumFormats', 'Size/Type (kB)', 'Format Sizes', 'Formats', 'Machine'];
             
             let csvContent = headers.join(',') + '\n';
             
@@ -1583,7 +1583,7 @@
             }
         }
 
-        // Function to run a grid experiment with incrementing format sizes
+        // Function to run a grid experiment with all possible combinations of format sizes
         async function runGridExperiment() {
             const formats = getSelectedFormats();
             if (formats.length === 0) {
@@ -1591,7 +1591,7 @@
                 return;
             }
             
-            log("Starting grid experiment...", "info");
+            log("Starting grid experiment with all possible combinations...", "info");
             
             // Save original settings to restore later
             const originalSettings = {
@@ -1611,8 +1611,8 @@
             gridButton.textContent = "Running Grid...";
             
             try {
-                // Create experiment configurations based on increments
-                const experimentConfigs = [];
+                // First, prepare the format configurations
+                const formatConfigs = {};
                 
                 // For text/plain
                 if (formats.includes('text/plain')) {
@@ -1620,11 +1620,9 @@
                     const increment = parseInt(document.getElementById('format-text-plain-increment').value) || 10;
                     const count = parseInt(document.getElementById('format-text-plain-count').value) || 3;
                     
+                    formatConfigs['text/plain'] = [];
                     for (let i = 0; i < count; i++) {
-                        const size = baseSize + (i * increment);
-                        const config = {};
-                        formats.forEach(f => config[f] = f === 'text/plain' ? size : 0);
-                        experimentConfigs.push(config);
+                        formatConfigs['text/plain'].push(baseSize + (i * increment));
                     }
                 }
                 
@@ -1634,11 +1632,9 @@
                     const increment = parseInt(document.getElementById('format-text-html-increment').value) || 10;
                     const count = parseInt(document.getElementById('format-text-html-count').value) || 3;
                     
+                    formatConfigs['text/html'] = [];
                     for (let i = 0; i < count; i++) {
-                        const size = baseSize + (i * increment);
-                        const config = {};
-                        formats.forEach(f => config[f] = f === 'text/html' ? size : 0);
-                        experimentConfigs.push(config);
+                        formatConfigs['text/html'].push(baseSize + (i * increment));
                     }
                 }
                 
@@ -1647,56 +1643,53 @@
                 if (customFormats.length > 0) {
                     const baseSize = parseInt(document.getElementById('format-custom-size').value) || 50;
                     const increment = parseInt(document.getElementById('format-custom-increment').value) || 10;
-                    const count = parseInt(document.getElementById('format-custom-count').value) || 3;
+                    const count = parseInt(document.getElementById('custom-format-count').value) || 3;
                     
                     for (let customFormat of customFormats) {
+                        formatConfigs[customFormat] = [];
                         for (let i = 0; i < count; i++) {
-                            const size = baseSize + (i * increment);
-                            const config = {};
-                            formats.forEach(f => config[f] = f === customFormat ? size : 0);
-                            experimentConfigs.push(config);
+                            formatConfigs[customFormat].push(baseSize + (i * increment));
                         }
                     }
                 }
                 
-                log(`Created ${experimentConfigs.length} experiment configurations for grid`, "info");
+                // Generate all combinations using recursive helper function
+                function generateCombinations(formatList, currentIndex, currentConfig) {
+                    // Base case: we've processed all formats
+                    if (currentIndex >= formatList.length) {
+                        return [Object.assign({}, currentConfig)];
+                    }
+                    
+                    const results = [];
+                    const currentFormat = formatList[currentIndex];
+                    const sizes = formatConfigs[currentFormat] || [];
+                    
+                    // For each possible size of the current format
+                    for (const size of sizes) {
+                        currentConfig[currentFormat] = size;
+                        const nextConfigs = generateCombinations(formatList, currentIndex + 1, currentConfig);
+                        results.push(...nextConfigs);
+                    }
+                    
+                    return results;
+                }
                 
-                // Run each experiment configuration
-                for (let i = 0; i < experimentConfigs.length; i++) {
-                    const config = experimentConfigs[i];
-                    log(`Running grid experiment ${i+1}/${experimentConfigs.length}`, "info");
+                const allConfigurations = generateCombinations(formats, 0, {});
+                log(`Created ${allConfigurations.length} combinations for grid experiment`, "info");
+                
+                // Run each combination
+                for (let i = 0; i < allConfigurations.length; i++) {
+                    const config = allConfigurations[i];
+                    log(`Running grid experiment ${i+1}/${allConfigurations.length}: ${JSON.stringify(config)}`, "info");
                     
-                    // Create sizesDictionary where values of 0 are replaced with defaults
-                    const sizesDictionary = {};
-                    
-                    if (config['text/plain']) {
-                        sizesDictionary['text/plain'] = config['text/plain'];
-                    } else if (formats.includes('text/plain')) {
-                        sizesDictionary['text/plain'] = parseInt(document.getElementById('format-text-plain-size').value) || 50;
-                    }
-                    
-                    if (config['text/html']) {
-                        sizesDictionary['text/html'] = config['text/html'];
-                    } else if (formats.includes('text/html')) {
-                        sizesDictionary['text/html'] = parseInt(document.getElementById('format-text-html-size').value) || 50;
-                    }
-                    
-                    for (let customFormat of customFormats) {
-                        if (config[customFormat]) {
-                            sizesDictionary[customFormat] = config[customFormat];
-                        } else {
-                            sizesDictionary[customFormat] = parseInt(document.getElementById('format-custom-size').value) || 50;
-                        }
-                    }
-                    
-                    // Run the experiment
-                    await runExperiment(sizesDictionary);
+                    // Run the experiment with this configuration
+                    await runExperiment(config);
                     
                     // Add a small delay between experiments
                     await new Promise(resolve => setTimeout(resolve, 500));
                 }
                 
-                log(`Completed grid experiment with ${experimentConfigs.length} configurations`, "success");
+                log(`Completed grid experiment with ${allConfigurations.length} combinations`, "success");
             } catch (error) {
                 log(`Error during grid experiment: ${error.message}`, "error");
             } finally {
