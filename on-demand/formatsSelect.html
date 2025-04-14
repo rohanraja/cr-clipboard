@@ -168,12 +168,14 @@
                     <tr>
                         <th>#</th>
                         <th>Time</th>
-                        <th>Size (MB)</th>
+                        <th>Size (KB)</th>
                         <th>Duration (ms)</th>
                         <th>Throughput (MB/s)</th>
                         <th>NumFormats</th>
-                        <th>Size/Type (MB)</th>
-                        <th>Format Sizes</th>
+                        <th>Size/Type (KB)</th>
+                        <th>text/plain (KB)</th>
+                        <th>text/html (KB)</th>
+                        <th>Custom (KB)</th>
                         <th>Formats</th>
                         <th>Machine</th>
                         <th>Highlight</th>
@@ -192,7 +194,7 @@
             <div class="controls">
                 <div>
                     <label for="data-size">Default Data Size (MB): </label>
-                    <input type="number" id="data-size" value="50" min="1" max="100">
+                    <input type="number" id="data-size" value="0" min="1" max="100">
                 </div>
                 
                 <div class="format-options">
@@ -211,9 +213,9 @@
                     <div class="format-option">
                         <input type="checkbox" id="format-text-plain" checked>
                         <label for="format-text-plain">text/plain</label>
-                        <input type="number" id="format-text-plain-size" class="format-size" value="50" min="1" max="100">
+                        <input type="number" id="format-text-plain-size" class="format-size" value="0" min="1" max="100">
                         <label for="format-text-plain-size">KB</label>
-                        <input type="number" id="format-text-plain-increment" class="format-size" value="10" min="1" max="100">
+                        <input type="number" id="format-text-plain-increment" class="format-size" value="100" min="1" max="100">
                         <label for="format-text-plain-increment">Increment</label>
                         <input type="number" id="format-text-plain-count" class="custom-format-count" value="3" min="1" max="10">
                         <label for="format-text-plain-count">Count</label>
@@ -222,9 +224,9 @@
                     <div class="format-option">
                         <input type="checkbox" id="format-text-html">
                         <label for="format-text-html">text/html</label>
-                        <input type="number" id="format-text-html-size" class="format-size" value="50" min="1" max="100">
+                        <input type="number" id="format-text-html-size" class="format-size" value="0" min="1" max="100">
                         <label for="format-text-html-size">KB</label>
-                        <input type="number" id="format-text-html-increment" class="format-size" value="10" min="1" max="100">
+                        <input type="number" id="format-text-html-increment" class="format-size" value="100" min="1" max="100">
                         <label for="format-text-html-increment">Increment</label>
                         <input type="number" id="format-text-html-count" class="custom-format-count" value="3" min="1" max="10">
                         <label for="format-text-html-count">Count</label>
@@ -235,9 +237,9 @@
                         <label for="format-custom">Custom formats</label>
                         <input type="number" id="custom-format-count" class="custom-format-count" value="1" min="1" max="10">
                         <label for="custom-format-count">count</label>
-                        <input type="number" id="format-custom-size" class="format-size" value="50" min="1" max="100">
+                        <input type="number" id="format-custom-size" class="format-size" value="0" min="1" max="100">
                         <label for="format-custom-size">KB</label>
-                        <input type="number" id="format-custom-increment" class="format-size" value="10" min="1" max="100">
+                        <input type="number" id="format-custom-increment" class="format-size" value="100" min="1" max="100">
                         <label for="format-custom-increment">Increment</label>
                         <input type="number" id="format-custom-count" class="custom-format-count" value="3" min="1" max="10">
                         <label for="format-custom-count">Count</label>
@@ -268,21 +270,221 @@
     <script>
     const seededClipboardRecords = [
     {
-        "datetime": "2025-04-09T05:19:21.011Z",
-        "totalSizeMB": 9.81,
-        "copyTimeMs": 58.199999928474426,
+        "datetime": "2025-04-11T04:38:40.543Z",
+        "totalSizeMB": 150.06,
+        "copyTimeMs": 12.399999976158142,
         "types": [
             "web custom/format-1",
             "text/plain",
             "text/html"
         ],
         "formatSizes": {
-            "web custom/format-1": 4.88,
-            "text/plain": 0.05,
-            "text/html": 4.88
+            "web custom/format-1": 50,
+            "text/plain": 50,
+            "text/html": 50.06
         },
-        "sizePerType": 3.27,
-        "throughput": 168.55670123807758,
+        "sizePerType": 50.02,
+        "throughput": 12101.612926493946,
+        "highlighted": false,
+        "systemInfo": {
+            "os": "MacOS",
+            "ram": "8 GB",
+            "cpu": "12 Cores",
+            "formatted": "MacOS, 8 GB, 12 Cores",
+            "userProvided": true
+        }
+    },
+    {
+        "datetime": "2025-04-11T04:38:41.581Z",
+        "totalSizeMB": 160.06,
+        "copyTimeMs": 14.399999976158142,
+        "types": [
+            "web custom/format-1",
+            "text/plain",
+            "text/html"
+        ],
+        "formatSizes": {
+            "web custom/format-1": 50,
+            "text/plain": 50,
+            "text/html": 60.06
+        },
+        "sizePerType": 53.35333333333333,
+        "throughput": 11115.277796181172,
+        "highlighted": false,
+        "systemInfo": {
+            "os": "MacOS",
+            "ram": "8 GB",
+            "cpu": "12 Cores",
+            "formatted": "MacOS, 8 GB, 12 Cores",
+            "userProvided": true
+        }
+    },
+    {
+        "datetime": "2025-04-11T04:38:42.614Z",
+        "totalSizeMB": 170.06,
+        "copyTimeMs": 14.799999952316284,
+        "types": [
+            "web custom/format-1",
+            "text/plain",
+            "text/html"
+        ],
+        "formatSizes": {
+            "web custom/format-1": 50,
+            "text/plain": 50,
+            "text/html": 70.06
+        },
+        "sizePerType": 56.68666666666667,
+        "throughput": 11490.5405775616,
+        "highlighted": false,
+        "systemInfo": {
+            "os": "MacOS",
+            "ram": "8 GB",
+            "cpu": "12 Cores",
+            "formatted": "MacOS, 8 GB, 12 Cores",
+            "userProvided": true
+        }
+    },
+    {
+        "datetime": "2025-04-11T04:38:43.653Z",
+        "totalSizeMB": 160.06,
+        "copyTimeMs": 14.099999904632568,
+        "types": [
+            "web custom/format-1",
+            "text/plain",
+            "text/html"
+        ],
+        "formatSizes": {
+            "web custom/format-1": 50,
+            "text/plain": 60,
+            "text/html": 50.06
+        },
+        "sizePerType": 53.35333333333333,
+        "throughput": 11351.773126424783,
+        "highlighted": false,
+        "systemInfo": {
+            "os": "MacOS",
+            "ram": "8 GB",
+            "cpu": "12 Cores",
+            "formatted": "MacOS, 8 GB, 12 Cores",
+            "userProvided": true
+        }
+    },
+    {
+        "datetime": "2025-04-11T04:38:44.681Z",
+        "totalSizeMB": 170.06,
+        "copyTimeMs": 7.599999904632568,
+        "types": [
+            "web custom/format-1",
+            "text/plain",
+            "text/html"
+        ],
+        "formatSizes": {
+            "web custom/format-1": 50,
+            "text/plain": 60,
+            "text/html": 60.06
+        },
+        "sizePerType": 56.68666666666667,
+        "throughput": 22376.316070259447,
+        "highlighted": false,
+        "systemInfo": {
+            "os": "MacOS",
+            "ram": "8 GB",
+            "cpu": "12 Cores",
+            "formatted": "MacOS, 8 GB, 12 Cores",
+            "userProvided": true
+        }
+    },
+    {
+        "datetime": "2025-04-11T04:38:45.705Z",
+        "totalSizeMB": 180.06,
+        "copyTimeMs": 10.399999976158142,
+        "types": [
+            "web custom/format-1",
+            "text/plain",
+            "text/html"
+        ],
+        "formatSizes": {
+            "web custom/format-1": 50,
+            "text/plain": 60,
+            "text/html": 70.06
+        },
+        "sizePerType": 60.02,
+        "throughput": 17313.46157815241,
+        "highlighted": false,
+        "systemInfo": {
+            "os": "MacOS",
+            "ram": "8 GB",
+            "cpu": "12 Cores",
+            "formatted": "MacOS, 8 GB, 12 Cores",
+            "userProvided": true
+        }
+    },
+    {
+        "datetime": "2025-04-11T04:38:46.730Z",
+        "totalSizeMB": 170.06,
+        "copyTimeMs": 6.600000023841858,
+        "types": [
+            "web custom/format-1",
+            "text/plain",
+            "text/html"
+        ],
+        "formatSizes": {
+            "web custom/format-1": 50,
+            "text/plain": 70,
+            "text/html": 50.06
+        },
+        "sizePerType": 56.68666666666667,
+        "throughput": 25766.66657358709,
+        "highlighted": false,
+        "systemInfo": {
+            "os": "MacOS",
+            "ram": "8 GB",
+            "cpu": "12 Cores",
+            "formatted": "MacOS, 8 GB, 12 Cores",
+            "userProvided": true
+        }
+    },
+    {
+        "datetime": "2025-04-11T04:38:47.784Z",
+        "totalSizeMB": 180.06,
+        "copyTimeMs": 39.299999952316284,
+        "types": [
+            "web custom/format-1",
+            "text/plain",
+            "text/html"
+        ],
+        "formatSizes": {
+            "web custom/format-1": 50,
+            "text/plain": 70,
+            "text/html": 60.06
+        },
+        "sizePerType": 60.02,
+        "throughput": 4581.679394872049,
+        "highlighted": false,
+        "systemInfo": {
+            "os": "MacOS",
+            "ram": "8 GB",
+            "cpu": "12 Cores",
+            "formatted": "MacOS, 8 GB, 12 Cores",
+            "userProvided": true
+        }
+    },
+    {
+        "datetime": "2025-04-11T04:38:48.867Z",
+        "totalSizeMB": 190.06,
+        "copyTimeMs": 42.10000002384186,
+        "types": [
+            "web custom/format-1",
+            "text/plain",
+            "text/html"
+        ],
+        "formatSizes": {
+            "web custom/format-1": 50,
+            "text/plain": 70,
+            "text/html": 70.06
+        },
+        "sizePerType": 63.35333333333333,
+        "throughput": 4514.4893086072725,
         "highlighted": false,
         "systemInfo": {
             "os": "MacOS",
@@ -449,7 +651,7 @@
                         // Get specific size for text/plain if available
                         const sizeElement = document.getElementById('format-text-plain-size');
                         if (sizeElement && sizeElement.value !== document.getElementById('data-size').value) {
-                            const formatSize = parseInt(sizeElement.value) || 50;
+                            const formatSize = parseInt(sizeElement.value) || 0;
                             formatData = generateDataOfSize(formatSize);
                             log(`Using custom size for text/plain: ${formatSize}MB`);
                         }
@@ -458,7 +660,7 @@
                         // Get specific size for text/html if available
                         const sizeElement = document.getElementById('format-text-html-size');
                         if (sizeElement && sizeElement.value !== document.getElementById('data-size').value) {
-                            const formatSize = parseInt(sizeElement.value) || 50;
+                            const formatSize = parseInt(sizeElement.value) || 0;
                             formatData = generateDataOfSize(formatSize);
                             log(`Using custom size for text/html: ${formatSize}MB`);
                         }
@@ -469,7 +671,7 @@
                             // Get specific size for custom formats if available
                             const sizeElement = document.getElementById('format-custom-size');
                             if (sizeElement && sizeElement.value !== document.getElementById('data-size').value) {
-                                const formatSize = parseInt(sizeElement.value) || 50;
+                                const formatSize = parseInt(sizeElement.value) || 0;
                                 formatData = generateDataOfSize(formatSize);
                                 log(`Using custom size for ${format}: ${formatSize}MB`);
                             }
@@ -749,7 +951,25 @@
                 const timeFormatted = time.toLocaleTimeString();
                 
                 // Format the sizes of each format nicely for display
-                const formatSizesHtml = formatSizesDisplay(record.formatSizes);
+                // Get individual format sizes
+                const textPlainSize = record.formatSizes && record.formatSizes['text/plain'] ? 
+                    record.formatSizes['text/plain'].toFixed(2) : '0';
+                    
+                const textHtmlSize = record.formatSizes && record.formatSizes['text/html'] ? 
+                    record.formatSizes['text/html'].toFixed(2) : '0';
+                
+                // Get sizes of all custom formats and combine them
+                let customSize = '0';
+                if (record.formatSizes) {
+                    const customFormats = Object.keys(record.formatSizes)
+                        .filter(format => format.startsWith('web custom/'));
+                    
+                    if (customFormats.length > 0) {
+                        const totalCustomSize = customFormats.reduce(
+                            (sum, format) => sum + record.formatSizes[format], 0);
+                        customSize = totalCustomSize.toFixed(2);
+                    }
+                }
                 
                 // Handle system info display
                 const systemInfoDisplay = record.systemInfo && record.systemInfo.formatted ? 
@@ -764,7 +984,9 @@
                     <td>${record.throughput ? record.throughput.toFixed(2) : 'N/A'}</td>
                     <td>${record.types.length}</td>
                     <td>${record.sizePerType ? record.sizePerType.toFixed(2) : 'N/A'}</td>
-                    <td>${formatSizesHtml}</td>
+                    <td>${textPlainSize}</td>
+                    <td>${textHtmlSize}</td>
+                    <td>${customSize}</td>
                     <td>${record.types.join(', ')}</td>
                     <td>${systemInfoDisplay}</td>
                     <td><input type="checkbox" class="highlight-checkbox" data-index="${index}" ${record.highlighted ? 'checked' : ''}></td>
@@ -858,14 +1080,29 @@
                 return;
             }
             
-            const headers = ['Timestamp', 'Size (kB)', 'Duration (ms)', 'Throughput (MB/s)', 'NumFormats', 'Size/Type (kB)', 'Format Sizes', 'Formats', 'Machine'];
+            const headers = ['Timestamp', 'Size (kB)', 'Duration (ms)', 'Throughput (MB/s)', 'NumFormats', 'Size/Type (kB)', 'text/plain (kB)', 'text/html (kB)', 'Custom (kB)', 'Formats', 'Machine'];
             
             let csvContent = headers.join(',') + '\n';
             
             recordsToExport.forEach(record => {
-                // Format sizes as JSON string for CSV (without base64 encoding)
-                const formatSizesStr = record.formatSizes ? 
-                    `"${JSON.stringify(record.formatSizes).replace(/"/g, '""')}"` : '"N/A"';
+                // Get individual format sizes
+                const textPlainSize = record.formatSizes && record.formatSizes['text/plain'] ? 
+                    record.formatSizes['text/plain'].toFixed(2) : 'N/A';
+                    
+                const textHtmlSize = record.formatSizes && record.formatSizes['text/html'] ? 
+                    record.formatSizes['text/html'].toFixed(2) : 'N/A';
+                
+                let customSize = 'N/A';
+                if (record.formatSizes) {
+                    const customFormats = Object.keys(record.formatSizes)
+                        .filter(format => format.startsWith('web custom/'));
+                    
+                    if (customFormats.length > 0) {
+                        const totalCustomSize = customFormats.reduce(
+                            (sum, format) => sum + record.formatSizes[format], 0);
+                        customSize = totalCustomSize.toFixed(2);
+                    }
+                }
                 
                 // Get system info display string
                 const systemInfoStr = record.systemInfo && record.systemInfo.formatted ? 
@@ -879,7 +1116,9 @@
                     record.throughput ? record.throughput.toFixed(2) : 'N/A',
                     record.types.length,
                     record.sizePerType ? record.sizePerType.toFixed(2) : 'N/A',
-                    formatSizesStr,
+                    textPlainSize,
+                    textHtmlSize,
+                    customSize,
                     '"' + record.types.join('; ') + '"',
                     systemInfoStr
                 ];
@@ -912,14 +1151,29 @@
                 return;
             }
             
-            const headers = ['Timestamp', 'Size (MB)', 'Duration (ms)', 'Throughput (MB/s)', 'NumFormats', 'Size/Type (MB)', 'Format Sizes', 'Formats', 'Machine'];
+            const headers = ['Timestamp', 'Size (MB)', 'Duration (ms)', 'Throughput (MB/s)', 'NumFormats', 'Size/Type (MB)', 'text/plain (MB)', 'text/html (MB)', 'Custom (MB)', 'Formats', 'Machine'];
             
             let csvContent = headers.join(',') + '\n';
             
             recordsToExport.forEach(record => {
-                // Format sizes as JSON string for CSV (without base64 encoding)
-                const formatSizesStr = record.formatSizes ? 
-                    `"${JSON.stringify(record.formatSizes).replace(/"/g, '""')}"` : '"N/A"';
+                // Get individual format sizes
+                const textPlainSize = record.formatSizes && record.formatSizes['text/plain'] ? 
+                    record.formatSizes['text/plain'].toFixed(2) : 'N/A';
+                    
+                const textHtmlSize = record.formatSizes && record.formatSizes['text/html'] ? 
+                    record.formatSizes['text/html'].toFixed(2) : 'N/A';
+                
+                let customSize = 'N/A';
+                if (record.formatSizes) {
+                    const customFormats = Object.keys(record.formatSizes)
+                        .filter(format => format.startsWith('web custom/'));
+                    
+                    if (customFormats.length > 0) {
+                        const totalCustomSize = customFormats.reduce(
+                            (sum, format) => sum + record.formatSizes[format], 0);
+                        customSize = totalCustomSize.toFixed(2);
+                    }
+                }
                 
                 // Get system info display string
                 const systemInfoStr = record.systemInfo && record.systemInfo.formatted ? 
@@ -933,7 +1187,9 @@
                     record.throughput ? record.throughput.toFixed(2) : 'N/A',
                     record.types.length,
                     record.sizePerType ? record.sizePerType.toFixed(2) : 'N/A',
-                    formatSizesStr,
+                    textPlainSize,
+                    textHtmlSize,
+                    customSize,
                     '"' + record.types.join('; ') + '"',
                     systemInfoStr
                 ];
@@ -994,7 +1250,9 @@
                         throughput: headers.indexOf('Throughput (MB/s)'),
                         numFormats: headers.indexOf('NumFormats'),
                         sizePerType: headers.indexOf('Size/Type (MB)'),
-                        formatSizes: headers.indexOf('Format Sizes'),
+                        textPlainSize: headers.indexOf('text/plain (MB)'),
+                        textHtmlSize: headers.indexOf('text/html (MB)'),
+                        customSize: headers.indexOf('Custom (MB)'),
                         formats: headers.indexOf('Formats'),
                         machine: headers.indexOf('Machine')
                     };
@@ -1027,46 +1285,16 @@
                             const formatsStr = values[colIndexes.formats]?.replace(/"/g, '') || '';
                             const types = formatsStr.split(';').map(type => type.trim()).filter(type => type);
                             
-                            // Parse format sizes if available
-                            let formatSizes = {};
-                            if (colIndexes.formatSizes !== -1 && values[colIndexes.formatSizes]) {
-                                try {
-                                    // Get the raw format sizes string
-                                    let formatSizesStr = values[colIndexes.formatSizes];
-                                    
-                                    // Remove surrounding quotes if present
-                                    if (formatSizesStr.startsWith('"') && formatSizesStr.endsWith('"')) {
-                                        formatSizesStr = formatSizesStr.substring(1, formatSizesStr.length - 1);
-                                    }
-                                    
-                                    // Restore double quotes in JSON that were escaped as "" in CSV
-                                    formatSizesStr = formatSizesStr.replace(/""/g, '"');
-                                    
-                                    if (formatSizesStr && formatSizesStr.toLowerCase() !== 'n/a') {
-                                        try {
-                                            // First try to parse as regular JSON
-                                            formatSizes = JSON.parse(formatSizesStr);
-                                        } catch (jsonErr) {
-                                            try {
-                                                // Next, try to decode as base64 (for backward compatibility)
-                                                const decoded = atob(formatSizesStr);
-                                                formatSizes = JSON.parse(decoded);
-                                            } catch (decodeErr) {
-                                                // Last resort: try to fix common JSON issues
-                                                log(`Attempting to repair malformed JSON: ${formatSizesStr.substring(0, 50)}...`, "info");
-                                                const repaired = formatSizesStr
-                                                    .replace(/;/g, ',')         // Replace semicolons with commas
-                                                    .replace(/'/g, '"')         // Replace single quotes with double quotes
-                                                    .replace(/([{,]\s*)(\w+):/g, '$1"$2":'); // Add quotes to keys
-                                                
-                                                formatSizes = JSON.parse(repaired);
-                                            }
-                                        }
-                                    }
-                                } catch (e) {
-                                    log(`Error parsing format sizes for row ${i}: ${e.message}`, "error");
-                                    formatSizes = {}; // Continue with empty formatSizes
-                                }
+                            // Parse format sizes
+                            const formatSizes = {};
+                            if (colIndexes.textPlainSize !== -1 && values[colIndexes.textPlainSize]) {
+                                formatSizes['text/plain'] = parseFloat(values[colIndexes.textPlainSize]) || 0;
+                            }
+                            if (colIndexes.textHtmlSize !== -1 && values[colIndexes.textHtmlSize]) {
+                                formatSizes['text/html'] = parseFloat(values[colIndexes.textHtmlSize]) || 0;
+                            }
+                            if (colIndexes.customSize !== -1 && values[colIndexes.customSize]) {
+                                formatSizes['web custom/format-1'] = parseFloat(values[colIndexes.customSize]) || 0;
                             }
                             
                             // Parse machine info if available
@@ -1302,7 +1530,7 @@
 
         // Event listeners
         document.getElementById('write-btn').addEventListener('click', async () => {
-            const currentSize = parseInt(document.getElementById('data-size').value) || 50;
+            const currentSize = parseInt(document.getElementById('data-size').value) || 0;
             
             // Generate data if it doesn't exist or if the size has changed
             if (!generatedData || currentSize !== lastGeneratedSize) {
@@ -1453,20 +1681,20 @@
             
             // Add text/plain format if selected
             if (document.getElementById('format-text-plain').checked) {
-                const size = parseInt(document.getElementById('format-text-plain-size').value) || 50;
+                const size = parseInt(document.getElementById('format-text-plain-size').value) || 0;
                 sizesDictionary['text/plain'] = size;
             }
             
             // Add text/html format if selected
             if (document.getElementById('format-text-html').checked) {
-                const size = parseInt(document.getElementById('format-text-html-size').value) || 50;
+                const size = parseInt(document.getElementById('format-text-html-size').value) || 0;
                 sizesDictionary['text/html'] = size;
             }
             
             // Add custom formats if selected
             if (document.getElementById('format-custom').checked) {
                 const count = parseInt(document.getElementById('custom-format-count').value) || 1;
-                const size = parseInt(document.getElementById('format-custom-size').value) || 50;
+                const size = parseInt(document.getElementById('format-custom-size').value) || 0;
                 
                 for (let i = 1; i <= count; i++) {
                     sizesDictionary[`web custom/format-${i}`] = size;
@@ -1558,7 +1786,7 @@
                     
                     // Process each format and its size from the record
                     Object.entries(record.formatSizes).forEach(([format, size]) => {
-                        sizesDictionary[format] = size*1024;
+                        sizesDictionary[format] = size;
                     });
                     
                     if (Object.keys(sizesDictionary).length === 0) {
@@ -1616,7 +1844,7 @@
                 
                 // For text/plain
                 if (formats.includes('text/plain')) {
-                    const baseSize = parseInt(document.getElementById('format-text-plain-size').value) || 50;
+                    const baseSize = parseInt(document.getElementById('format-text-plain-size').value) || 0;
                     const increment = parseInt(document.getElementById('format-text-plain-increment').value) || 10;
                     const count = parseInt(document.getElementById('format-text-plain-count').value) || 3;
                     
@@ -1628,7 +1856,7 @@
                 
                 // For text/html
                 if (formats.includes('text/html')) {
-                    const baseSize = parseInt(document.getElementById('format-text-html-size').value) || 50;
+                    const baseSize = parseInt(document.getElementById('format-text-html-size').value) || 0;
                     const increment = parseInt(document.getElementById('format-text-html-increment').value) || 10;
                     const count = parseInt(document.getElementById('format-text-html-count').value) || 3;
                     
@@ -1641,7 +1869,7 @@
                 // For custom formats
                 const customFormats = formats.filter(f => f.startsWith('web custom/'));
                 if (customFormats.length > 0) {
-                    const baseSize = parseInt(document.getElementById('format-custom-size').value) || 50;
+                    const baseSize = parseInt(document.getElementById('format-custom-size').value) || 0;
                     const increment = parseInt(document.getElementById('format-custom-increment').value) || 10;
                     const count = parseInt(document.getElementById('custom-format-count').value) || 3;
                     
