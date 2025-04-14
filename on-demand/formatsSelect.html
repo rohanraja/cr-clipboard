@@ -176,6 +176,7 @@
                         <th>text/plain (KB)</th>
                         <th>text/html (KB)</th>
                         <th>Custom (KB)</th>
+                        <th>Format Gain (ms)</th>
                         <th>Formats</th>
                         <th>Machine</th>
                         <th>Highlight</th>
@@ -882,7 +883,7 @@
         }
 
         // Function to record clipboard operation data
-        function recordClipboardOperation() {
+        function recordClipboardOperation(formatGainMs = null) {
             
             const now = new Date();
             const sizeInMB = lastReadMB;
@@ -905,12 +906,16 @@
                 sizePerType: parseFloat(sizeInMB) / types.length,
                 throughput: throughput,
                 highlighted: false,
-                systemInfo: machineInfo // Use current machine info
+                systemInfo: machineInfo, // Use current machine info
+                formatGainMs: formatGainMs // Add the format gain in milliseconds
             };
             
             clipboardRecords.push(record);
             
             log(`Record added: ${now.toLocaleTimeString()} - Size: ${sizeInMB}MB - Time: ${copyTimeMs.toFixed(2)}ms - Throughput: ${throughput.toFixed(2)} MB/s - Types: ${types.join(', ')}`, "success");
+            if (formatGainMs !== null) {
+                log(`Format Gain: ${formatGainMs.toFixed(2)}ms compared to text/plain only`, formatGainMs > 0 ? "error" : "success");
+            }
             log(`Total records: ${clipboardRecords.length}`);
             
             updateRecordsTable();
@@ -971,6 +976,13 @@
                     }
                 }
                 
+                // Format gain display
+                const formatGainDisplay = record.formatGainMs !== null && record.formatGainMs !== undefined ? 
+                    record.formatGainMs.toFixed(2) : 'N/A';
+                
+                // Add class for positive/negative gain
+                const gainClass = record.formatGainMs > 0 ? 'error' : (record.formatGainMs < 0 ? 'success' : '');
+                
                 // Handle system info display
                 const systemInfoDisplay = record.systemInfo && record.systemInfo.formatted ? 
                     record.systemInfo.formatted : 
@@ -987,6 +999,7 @@
                     <td>${textPlainSize}</td>
                     <td>${textHtmlSize}</td>
                     <td>${customSize}</td>
+                    <td class="${gainClass}">${formatGainDisplay}</td>
                     <td>${record.types.join(', ')}</td>
                     <td>${systemInfoDisplay}</td>
                     <td><input type="checkbox" class="highlight-checkbox" data-index="${index}" ${record.highlighted ? 'checked' : ''}></td>
@@ -1080,7 +1093,8 @@
                 return;
             }
             
-            const headers = ['Timestamp', 'Size (kB)', 'Duration (ms)', 'Throughput (MB/s)', 'NumFormats', 'Size/Type (kB)', 'text/plain (kB)', 'text/html (kB)', 'Custom (kB)', 'Formats', 'Machine'];
+            const headers = ['Timestamp', 'Size (kB)', 'Duration (ms)', 'Throughput (MB/s)', 'NumFormats', 'Size/Type (kB)', 
+                            'text/plain (kB)', 'text/html (kB)', 'Custom (kB)', 'Format Gain (ms)', 'Formats', 'Machine'];
             
             let csvContent = headers.join(',') + '\n';
             
@@ -1119,6 +1133,7 @@
                     textPlainSize,
                     textHtmlSize,
                     customSize,
+                    record.formatGainMs !== null && record.formatGainMs !== undefined ? record.formatGainMs.toFixed(2) : 'N/A',
                     '"' + record.types.join('; ') + '"',
                     systemInfoStr
                 ];
@@ -1253,6 +1268,7 @@
                         textPlainSize: headers.indexOf('text/plain (MB)'),
                         textHtmlSize: headers.indexOf('text/html (MB)'),
                         customSize: headers.indexOf('Custom (MB)'),
+                        formatGain: headers.indexOf('Format Gain (ms)'),
                         formats: headers.indexOf('Formats'),
                         machine: headers.indexOf('Machine')
                     };
@@ -1297,6 +1313,10 @@
                                 formatSizes['web custom/format-1'] = parseFloat(values[colIndexes.customSize]) || 0;
                             }
                             
+                            // Parse format gain if available
+                            const formatGain = colIndexes.formatGain !== -1 && values[colIndexes.formatGain] ? 
+                                parseFloat(values[colIndexes.formatGain]) : null;
+                            
                             // Parse machine info if available
                             const machineStr = values[colIndexes.machine]?.replace(/"/g, '').trim() || '';
                             let recordSystemInfo = null;
@@ -1321,7 +1341,8 @@
                                 sizePerType: parseFloat(values[colIndexes.sizePerType]) || 0,
                                 throughput: parseFloat(values[colIndexes.throughput]) || 0,
                                 highlighted: false,
-                                systemInfo: recordSystemInfo || systemInfo // Use current system info if not available
+                                systemInfo: recordSystemInfo || systemInfo, // Use current system info if not available
+                                formatGainMs: formatGain // Add format gain if available
                             };
                             
                             importedRecords.push(record);
@@ -1617,6 +1638,7 @@
                 const formatKeys = Object.keys(sizesDictionary);
                 const hasMultipleFormats = formatKeys.length > 1;
                 let plainTextOnlyTime = null;
+                let formatGain = null;
                 
                 // If we have multiple formats and text/plain is one of them, run text/plain only test first
                 if (hasMultipleFormats && sizesDictionary.hasOwnProperty('text/plain')) {
@@ -1658,9 +1680,9 @@
                             plainTextOnlyTime = readResult.time;
                             log(`Text/plain only test completed in ${plainTextOnlyTime.toFixed(2)}ms`, "success");
                             
-                            // Record the operation
-                            log("Recording text/plain only test results...");
-                            recordClipboardOperation();
+                            // Record the text/plain only operation if uncommented
+                            // log("Recording text/plain only test results...");
+                            // recordClipboardOperation();
                             
                             // Add a small delay before the full test
                             await new Promise(resolve => setTimeout(resolve, 1000));
@@ -1714,6 +1736,7 @@
                         if (plainTextOnlyTime !== null) {
                             const multiFormatTime = readResult.time;
                             const difference = multiFormatTime - plainTextOnlyTime;
+                            formatGain = difference; // Store the difference for recording
                             const percentageDiff = ((difference / plainTextOnlyTime) * 100).toFixed(2);
                             
                             log("----------- FORMAT COMPARISON -----------", "info");
@@ -1726,9 +1749,9 @@
                             log("----------------------------------------", "info");
                         }
                         
-                        // Record the operation
+                        // Record the operation with the format gain information
                         log("Recording experiment results...");
-                        recordClipboardOperation(); // This will also scroll the table to the bottom
+                        recordClipboardOperation(formatGain); // Pass the format gain
                     }
                 }
             } catch (error) {
