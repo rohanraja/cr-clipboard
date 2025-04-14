@@ -1613,7 +1613,65 @@
             log("Starting experiment with specified format sizes...", "info");
             
             try {
-                // Configure formats based on the dictionary
+                // Check if we have multiple formats for comparison
+                const formatKeys = Object.keys(sizesDictionary);
+                const hasMultipleFormats = formatKeys.length > 1;
+                let plainTextOnlyTime = null;
+                
+                // If we have multiple formats and text/plain is one of them, run text/plain only test first
+                if (hasMultipleFormats && sizesDictionary.hasOwnProperty('text/plain')) {
+                    log("Multiple formats detected. Running text/plain only test first for comparison...", "info");
+                    
+                    // Save the original dictionary for later
+                    const fullDictionary = {...sizesDictionary};
+                    
+                    // Create a dictionary with only text/plain
+                    const plainTextOnly = {
+                        'text/plain': sizesDictionary['text/plain']
+                    };
+                    
+                    // Configure formats for text/plain only
+                    document.getElementById('format-text-plain').checked = true;
+                    document.getElementById('format-text-plain-size').value = plainTextOnly['text/plain'];
+                    document.getElementById('format-text-html').checked = false;
+                    document.getElementById('format-custom').checked = false;
+                    
+                    // Generate data based on the text/plain size
+                    const plainTextSize = plainTextOnly['text/plain'];
+                    log(`Generating data for text/plain only test (${plainTextSize} MB)...`);
+                    const plainTextData = generateDataOfSize(plainTextSize);
+                    
+                    // Write to clipboard with text/plain only
+                    log("Writing to clipboard with text/plain format only...");
+                    const plainTextWriteTime = await writeDataToClipboard(plainTextData);
+                    
+                    if (plainTextWriteTime) {
+                        // Wait a moment before reading
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                        
+                        // Read from clipboard
+                        log("Reading from clipboard (text/plain only)...");
+                        const readResult = await readFromClipboard();
+                        
+                        if (readResult) {
+                            // Record the text/plain only time
+                            plainTextOnlyTime = readResult.time;
+                            log(`Text/plain only test completed in ${plainTextOnlyTime.toFixed(2)}ms`, "success");
+                            
+                            // Record the operation
+                            log("Recording text/plain only test results...");
+                            recordClipboardOperation();
+                            
+                            // Add a small delay before the full test
+                            await new Promise(resolve => setTimeout(resolve, 1000));
+                        }
+                    }
+                    
+                    // Now restore the original dictionary for the full test
+                    sizesDictionary = fullDictionary;
+                }
+                
+                // Configure formats based on the full dictionary
                 document.getElementById('format-text-plain').checked = sizesDictionary.hasOwnProperty('text/plain');
                 if (sizesDictionary['text/plain']) {
                     document.getElementById('format-text-plain-size').value = sizesDictionary['text/plain'];
@@ -1636,11 +1694,11 @@
                 document.getElementById('data-size').value = maxSize;
                 
                 // Generate data based on the largest size
-                log(`Generating data for experiment (max size: ${maxSize} MB)...`);
+                log(`Generating data for full experiment (max size: ${maxSize} MB)...`);
                 const generatedData = generateDataOfSize(maxSize);
                 
                 // Write to clipboard
-                log("Writing to clipboard with configured formats...");
+                log("Writing to clipboard with all configured formats...");
                 const writeTime = await writeDataToClipboard(generatedData);
                 
                 if (writeTime) {
@@ -1648,10 +1706,26 @@
                     await new Promise(resolve => setTimeout(resolve, 500));
                     
                     // Read from clipboard
-                    log("Reading from clipboard...");
+                    log("Reading from clipboard (all formats)...");
                     const readResult = await readFromClipboard();
                     
                     if (readResult) {
+                        // If we ran both tests, show comparison
+                        if (plainTextOnlyTime !== null) {
+                            const multiFormatTime = readResult.time;
+                            const difference = multiFormatTime - plainTextOnlyTime;
+                            const percentageDiff = ((difference / plainTextOnlyTime) * 100).toFixed(2);
+                            
+                            log("----------- FORMAT COMPARISON -----------", "info");
+                            log(`Text/plain only: ${plainTextOnlyTime.toFixed(2)}ms`, "info");
+                            log(`Multiple formats: ${multiFormatTime.toFixed(2)}ms`, "info");
+                            log(`Difference: ${difference.toFixed(2)}ms (${percentageDiff}%)`, 
+                                difference > 0 ? "error" : "success");
+                            log(`Using multiple formats is ${Math.abs(percentageDiff)}% ${difference > 0 ? 'slower' : 'faster'} than text/plain only`, 
+                                "info");
+                            log("----------------------------------------", "info");
+                        }
+                        
                         // Record the operation
                         log("Recording experiment results...");
                         recordClipboardOperation(); // This will also scroll the table to the bottom
