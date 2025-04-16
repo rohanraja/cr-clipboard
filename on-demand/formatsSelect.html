@@ -1152,6 +1152,15 @@
             const blob = new Blob([csvContent], { type: 'text/csv' });
             const url = URL.createObjectURL(blob);
             
+            // Also copy the CSV content to clipboard
+            navigator.clipboard.writeText(csvContent)
+                .then(() => {
+                    log(`CSV data copied to clipboard (${sortedRecords.length} records)`, "success");
+                })
+                .catch(err => {
+                    log(`Failed to copy CSV to clipboard: ${err.message}`, "error");
+                });
+            
             const a = document.createElement('a');
             a.href = url;
             a.download = `clipboard-records-${new Date().toISOString().slice(0, 10)}.csv`;
@@ -1878,7 +1887,7 @@
             const rerunAllNewBtn = document.getElementById('rerun-all-new-btn');
             rerunAllNewBtn.disabled = true;
             rerunAllNewBtn.textContent = "Running...";
-
+            
             const tmpRecords = [...clipboardRecords]; // Create a copy of the records to avoid modifying the original array
             
             try {
