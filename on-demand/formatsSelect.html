@@ -1093,12 +1093,21 @@
                 return;
             }
             
+            // Create a sorted copy of the records array by format gain (ASC)
+            const sortedRecords = [...recordsToExport].sort((a, b) => {
+                // Handle undefined or null format gains
+                const gainA = a.formatGainMs !== undefined && a.formatGainMs !== null ? a.formatGainMs : Number.MAX_SAFE_INTEGER;
+                const gainB = b.formatGainMs !== undefined && b.formatGainMs !== null ? b.formatGainMs : Number.MAX_SAFE_INTEGER;
+                
+                return gainA - gainB; // Sort in ascending order
+            });
+            
             const headers = ['Timestamp', 'Size (kB)', 'Duration (ms)', 'Throughput (MB/s)', 'NumFormats', 'Size/Type (kB)', 
                             'text/plain (kB)', 'text/html (kB)', 'Custom (kB)', 'Format Gain (ms)', 'Formats', 'Machine'];
             
             let csvContent = headers.join(',') + '\n';
             
-            recordsToExport.forEach(record => {
+            sortedRecords.forEach(record => {
                 // Get individual format sizes
                 const textPlainSize = record.formatSizes && record.formatSizes['text/plain'] ? 
                     record.formatSizes['text/plain'].toFixed(2) : 'N/A';
@@ -1150,7 +1159,7 @@
             a.click();
             document.body.removeChild(a);
             
-            log(`Records exported as CSV (${recordsToExport.length} records, excluding seeded records)`, "success");
+            log(`Records exported as CSV (${sortedRecords.length} records, sorted by format gain, excluding seeded records)`, "success");
         }
 
         // Function to upload records to server
